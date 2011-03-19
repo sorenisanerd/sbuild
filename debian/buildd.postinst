@@ -22,6 +22,14 @@ set -e
 #     installation fails and the `postinst' is called with `abort-upgrade',
 #     `abort-remove' or `abort-deconfigure'.
 
+if which dpkg-maintscript-helper >/dev/null
+then
+    # No predepends possible because Lenny needs to be supported.
+    dpkg-maintscript-helper rm_conffile /etc/schroot/script-defaults.buildd -- "$@"
+    dpkg-maintscript-helper rm_conffile /etc/schroot/mount-defaults.buildd -- "$@"
+    dpkg-maintscript-helper rm_conffile /etc/schroot/setup.d/25nssdatabases -- "$@"
+fi
+
 case "$1" in
     configure)
 
