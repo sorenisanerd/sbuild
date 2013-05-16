@@ -79,19 +79,17 @@ then
 fi
 
 BASE="$SUITE"
-OLDSTABLE="lenny"
-STABLE="squeeze"
-TESTING="wheezy"
+OLDSTABLE="squeeze"
+STABLE="wheezy"
+TESTING="jessie"
 case "$SUITE" in
     oldstable) BASE=$OLDSTABLE ;;
     oldstable-security) BASE=$OLDSTABLE; VARIANT="security" ;;
     oldstable-backports) BASE=$OLDSTABLE; VARIANT="backports" ;;
-    oldstable-volatile) BASE=$OLDSTABLE; VARIANT="volatile" ;;
     oldstable-edu) BASE=$OLDSTABLE; VARIANT="edu" ;;
     stable) BASE=$STABLE ;;
     stable-security) BASE=$STABLE; VARIANT="security" ;;
     stable-backports) BASE=$STABLE; VARIANT="backports" ;;
-    stable-volatile) BASE=$STABLE; VARIANT="volatile" ;;
     stable-edu) BASE=$STABLE; VARIANT="edu" ;;
     testing) BASE=$TESTING ;;
     testing-security) BASE=$TESTING; VARIANT="security" ;;
@@ -151,6 +149,15 @@ EOT
     sudo mv "${TEMPFILE}" "${TARGET}/usr/sbin/policy-rc.d"
     sudo chown root: "${TARGET}/usr/sbin/policy-rc.d"
     sudo chmod 0755 "${TARGET}/usr/sbin/policy-rc.d"
+    # With wheezy and up /dev/shm is a symlink to /run/shm; because all
+    # suites share the same setup scripts, this needs to be reverted.
+    echo "I: Switching /dev/shm to a real directory..."
+    if [ -L "${TARGET}/dev/shm" ]
+    then
+        sudo rm "${TARGET}/dev/shm"
+        sudo mkdir "${TARGET}/dev/shm"
+        sudo chmod a+w,o+t "${TARGET}/dev/shm"
+    fi
     ensure_target_unmounted
 }
 
@@ -190,8 +197,8 @@ EOT
         [ "$ARCH" = "mips" ] || \
         [ "$ARCH" = "sparc" ] || \
         [ "$ARCH" = "i386" ] || \
-        [ "$ARCH" = "powerpc" ] || \
-        [ "$ARCH" = "s390" ]; then
+        [ "$ARCH" = "s390" ] || \
+        [ "$ARCH" = "powerpc" ]; then
             echo "personality=linux32" >>"${TEMPFILE}"
     fi
     sudo mv "${TEMPFILE}" "/etc/schroot/chroot.d/buildd-${IDENTIFIER}${EXTRA}-${ARCH}"
@@ -356,9 +363,6 @@ setup_sbuild() {
     sudo mkdir -p "$TARGET/var/lib/sbuild/srcdep-lock"
     sudo chown -R root:sbuild "$TARGET/var/lib/sbuild"
     sudo chmod -R 02775 "$TARGET/var/lib/sbuild"
-    sudo mkdir -p "$TARGET/var/lock/sbuild"
-    sudo chown -R root:sbuild "$TARGET/var/lock/sbuild"
-    sudo chmod -R 02775 "$TARGET/var/lock/sbuild"
     ensure_target_unmounted
 }
 
