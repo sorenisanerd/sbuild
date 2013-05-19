@@ -68,7 +68,7 @@ case "$1" in
 		--shell /bin/bash --ingroup sbuild --gecos "Debian source builder" sbuild
         fi
 	# Unlock account in case it was locked from previous purge.
-	usermod -U -e '' sbuild
+	usermod -U -e '' sbuild || true
 
         chown -R sbuild:sbuild /var/lib/sbuild
         chmod 02770 /var/lib/sbuild
