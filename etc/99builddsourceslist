@@ -87,9 +87,9 @@ if [ "$1" = "setup-start" ] || [ "$1" = "setup-recover" ]; then
             SUITES="${SUITE_BASE}"
             [ -n "${debian_mirror}" ] && domirror "${debian_mirror} ${SUITE_BASE} COMPONENT" ${APT_LIST}
             domirror "http://ftp.debian.org/debian ${SUITE_BASE} COMPONENT" ${APT_LIST}
-            [ -n "${security_mirror}" ] && domirror "${security_mirror} ${SUITE_BASE} COMPONENT" ${APT_LIST}
+            [ -n "${security_mirror}" ] && domirror "${security_mirror} ${SUITE_BASE}/updates COMPONENT" ${APT_LIST}
             domirror "http://security-master.debian.org/debian-security ${SUITE_BASE}/updates COMPONENT" ${APT_LIST}
-            domirror "http://security-master.debian.org/buildd-${SUITE_BASE} /" ${APT_LIST}
+            domirror "http://security-master.debian.org/debian-security-buildd buildd-${SUITE_BASE}/updates COMPONENT" ${APT_LIST}
 
         elif [ "${SUITE_VARIANT%%-sloppy}" = 'backports' ]; then
             SUITES="${SUITE_BASE}"
@@ -183,8 +183,8 @@ if [ "$1" = "setup-start" ] || [ "$1" = "setup-recover" ]; then
                     fi
                     echo deb http://security-master.debian.org/debian-security ${SUITE_BASE}/updates main contrib >> ${APT_LIST_AUTO}
                     echo deb-src http://security-master.debian.org/debian-security ${SUITE_BASE}/updates main contrib >> ${APT_LIST_AUTO}
-                    echo deb http://security-master.debian.org/buildd-${SUITE_BASE} / >> ${APT_LIST_AUTO}
-                    echo deb-src http://security-master.debian.org/buildd-${SUITE_BASE} / >> ${APT_LIST_AUTO}
+                    echo deb http://security-master.debian.org/debian-security-buildd buildd-${SUITE_BASE}/updates main contrib >> ${APT_LIST_AUTO}
+                    echo deb-src http://security-master.debian.org/debian-security-buildd buildd-${SUITE_BASE}/updates main contrib >> ${APT_LIST_AUTO}
                 elif [ ${SUITE_VARIANT%%-sloppy} = 'backports' ]; then
                         : > ${APT_LIST_AUTO}
                     if [ -n "${backports_mirror}" ]; then
