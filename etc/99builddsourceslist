@@ -22,11 +22,27 @@
 
 set -e
 
-if [ -f "$CHROOT_SCRIPT_CONFIG" ]; then
-    . "$CHROOT_SCRIPT_CONFIG"
-elif [ "$2" = "ok" ]; then
-    echo "script-config file '$CHROOT_SCRIPT_CONFIG' does not exist"
-    exit 1
+. "$SETUP_DATA_DIR/common-data"
+. "$SETUP_DATA_DIR/common-functions"
+. "$SETUP_DATA_DIR/common-config"
+
+if [ "$CHROOT_SESSION_PURGE" = "true" ]; then
+    case $CHROOT_NAME in
+        *-*-*-*-sbuild*)
+        SUITE_BASE=$(echo $CHROOT_NAME | cut -f1 -d-)
+        SUITE_VARIANT=$(echo $CHROOT_NAME | cut -f2,3 -d-)
+        ;;
+        *-*-*-sbuild*)
+        SUITE_BASE=$(echo $CHROOT_NAME | cut -f1 -d-)
+        SUITE_VARIANT=$(echo $CHROOT_NAME | cut -f2 -d-)
+        ;;
+        *-*-sbuild*)
+        SUITE_BASE=$(echo $CHROOT_NAME | cut -f1 -d-)
+        if [ ${SUITE_BASE} != "sid" ]; then
+            SUITE_VARIANT="proposed-updates"
+        fi
+        ;;
+    esac
 fi
 
 VERBOSE=""
