@@ -23,7 +23,6 @@ usage() {
     echo "Valid suites: oldstable, stable, testing, unstable, experimental," >&2
     echo "              oldstable-security, stable-security, testing-security," >&2
     echo "              oldstable-backports, stable-backports," >&2
-    echo "              oldstable-volatile, stable-volatile," >&2
     echo "              oldstable-edu, stable-edu, testing-edu" >&2
     echo "If vgname is given, the script will setup schroot" >&2
     echo "to use snapshots based on a source lv." >&2
@@ -240,14 +239,6 @@ deb-src http://backports-master.debian.org/buildd/ ${BASE}-backports main contri
 EOT
     fi
 
-    if [ "$VARIANT" = "volatile" ]; then
-        echo "I: Adding volatile entries to sources.list..."
-        cat >> "${TEMPFILE}" <<EOT
-deb     http://volatile.debian.net/debian-volatile      ${BASE}-proposed-updates/volatile main contrib non-free
-deb-src http://volatile.debian.net/debian-volatile      ${BASE}-proposed-updates/volatile main contrib non-free
-EOT
-    fi
-
 	if [ -z "$VARIANT" ] && [ "$BASE" != "sid" ] && [ -z "$VGNAME" ]; then
         # in case of lvm-chroots, we add the entries on the fly
         echo "I: Adding proposed-updates entries to sources.list..."
@@ -330,7 +321,6 @@ adjust_debconf() {
 }
 
 adjust_dpkg() {
-    if [ "${BASE}" != "lenny" ]; then
         ensure_target_mounted
         echo "I: Adding apt.conf..."
         TEMPFILE="$(mktemp)"
@@ -351,7 +341,6 @@ EOT
         sudo chmod 0644 "${TARGET}/etc/dpkg/dpkg.cfg.d/force-confnew"
 
         ensure_target_unmounted
-    fi
 }
 
 setup_sbuild() {
@@ -474,7 +463,7 @@ do_debootstrap
 #setup_symlink
 setup_schroot
 if ! [ -z "$VGNAME" ] && [ -z "$VARIANT" ]; then
-    variants="security volatile backports"
+    variants="security backports"
     if [ "$ARCH" == "i386" -o "$ARCH" == "amd64" -o "$ARCH" == "powerpc" ]; then
         variants="${variants} edu"
     fi
@@ -485,13 +474,6 @@ if ! [ -z "$VGNAME" ] && [ -z "$VARIANT" ]; then
         if [ "$BASE" = "sid" ]; then SUITEEXTRA="experimental"; fi
 
         setup_schroot_variant
-
-        if [ "$BASE" = "lenny" ] && [ "$EXTRA" = "-backports" ]; then
-            # Also generate -sloppy chroots.
-            EXTRA=-backports-sloppy
-            SUITEEXTRA=${SUITE}${EXTRA}
-            setup_schroot_variant
-        fi
     done
 fi
 setup_sources
