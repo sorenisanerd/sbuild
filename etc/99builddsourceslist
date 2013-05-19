@@ -67,12 +67,6 @@ if [ "$1" = "setup-start" ] || [ "$1" = "setup-recover" ]; then
         APT_CONF="${CHROOT_PATH}/etc/apt/apt.conf.d/99buildd.conf"
         APT_KEYS=""
         rm -f "${APT_LIST}" "${APT_CONF}"
-        if [ "${SUITE_BASE}" = 'lenny' ]; then
-            APT_CONF="${CHROOT_PATH}/etc/apt/apt.conf"
-            if [ -f ${APT_CONF} ]; then
-                mv ${APT_CONF} ${APT_CONF}.PREBUILDD
-            fi
-        fi
 
         COMPONENT="main contrib"
         COMPONENT_SRC="main contrib non-free"
@@ -223,13 +217,6 @@ elif [ "$1" = "setup-stop" ]; then
         APT_LIST="${CHROOT_PATH}/etc/apt/sources.buildd.list"
         APT_CONF="${CHROOT_PATH}/etc/apt/apt.conf.d/99buildd.conf"
         rm -f "${APT_LIST}" "${APT_CONF}"
-        if [ "${SUITE_BASE}" = 'lenny' ]; then
-            APT_CONF="${CHROOT_PATH}/etc/apt/apt.conf"
-            rm -f ${APT_CONF}
-            if [ -f ${APT_CONF}.PREBUILDD ]; then
-                mv ${APT_CONF}.PREBUILDD ${APT_CONF}
-            fi
-        fi
     else
 	if [ -n "$SUITE_VARIANT" ]; then
 		SOURCES_FILE_NAME="${SUITE_BASE}-${SUITE_VARIANT}.sources"
