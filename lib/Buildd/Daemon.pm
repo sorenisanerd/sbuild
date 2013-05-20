@@ -377,6 +377,7 @@ sub do_wanna_build {
 			   'extra-conflicts' => 'extra-conflicts',
 			   'build_dep_resolver' => 'build_dep_resolver',
 			   'arch_all' => 'arch_all',
+			   'mail_logs' => 'mail_logs',
 			 };
             for my $f (keys %$fields) {
                 $ret->{$f} = $pkgd->{$fields->{$f}} if $pkgd->{$fields->{$f}};
@@ -527,6 +528,8 @@ sub do_build {
     #it, we hope that the address is configured in .sbuildrc and the right one:
     if ($dist_config->get('LOGS_MAILED_TO')) {
 	push @sbuild_args, '--mail-log-to=' . $dist_config->get('LOGS_MAILED_TO');
+    } elsif ($dist_config->get('LOGS_MAIL_ALSO') || $todo->{'mail_logs'}) {
+        push @sbuild_args, '--mail-log-to=' . join (',', grep { $_ } ($dist_config->get('LOGS_MAIL_ALSO'), $todo->{'mail_logs'}));
     }
     #Some distributions (bpo, experimental) require a more complex dep resolver.
     #Ask sbuild to use another build-dep resolver if the config says so:

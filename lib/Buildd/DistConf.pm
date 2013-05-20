@@ -125,6 +125,9 @@ sub setup ($) {
 	'LOGS_MAILED_TO'			=> {
 	    DEFAULT => undef
 	},
+	'LOGS_MAIL_ALSO'			=> {
+	    DEFAULT => undef
+	},
 	'BUILD_DEP_RESOLVER'			=> {
 	    DEFAULT => undef
 	},
