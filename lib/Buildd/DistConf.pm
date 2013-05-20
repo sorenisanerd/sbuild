@@ -103,6 +103,9 @@ sub setup ($) {
 	'WANNA_BUILD_API'			=> {
 	    DEFAULT => undef,
 	},
+	'WANNA_BUILD_MIN_AGE'			=> {
+	    DEFAULT => undef,
+	},
 	'DUPLOAD_LOCAL_QUEUE_DIR'		=> {
 	    CHECK => $validate_directory_in_home,
 	    DEFAULT => 'upload'
