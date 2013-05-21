@@ -118,7 +118,9 @@ check_prerequisites() {
         error "/etc/schroot/chroot.d not found, schroot not installed?"
     [ ! -d $TARGET ] || error "Target $TARGET already exists."
     ! schroot -l | grep ^${IDENTIFIER}-${ARCH}-sbuild$ -q || error "schroot target ${IDENTIFIER}-${ARCH}-sbuild exists"
-    ! schroot -l | grep ^${SUITE}-${ARCH}-sbuild$ -q || error "schroot target ${SUITE}-${ARCH}-sbuild exists"
+    if [ "${SUITE}" = experimental ]; then
+        ! schroot -l | grep ^${SUITE}-${ARCH}-sbuild$ -q || error "schroot target ${SUITE}-${ARCH}-sbuild exists"
+    fi
     [ ! -f "/etc/schroot/chroot.d/buildd-${IDENTIFIER}-${ARCH}" ] || error "schroot file /etc/schroot/chroot.d/buildd-${IDENTIFIER}-${ARCH} already exists"
     if [ -z "$VGNAME" ]; then
         mkdir -p ~buildd/chroots
@@ -160,22 +162,18 @@ EOT
     ensure_target_unmounted
 }
 
-setup_symlink() {
-    echo "I: Setting up symlink..."
-    ln -sv "$(basename $TARGET)" $SUITE
-}
-
 setup_schroot() {
     echo "I: Setting up schroot configuration..."
     TEMPFILE="$(mktemp)"
-    SUITEEXTRA=${SUITEEXTRA:-${SUITE}${EXTRA}}
     cat > "${TEMPFILE}" <<EOT
 [${IDENTIFIER}${EXTRA}-${ARCH}-sbuild]
 description=Debian ${IDENTIFIER} buildd chroot
 users=buildd
 root-users=buildd
-aliases=${SUITEEXTRA}-${ARCH}-sbuild
 EOT
+    if [ -n "${SUITEEXTRA}" ]; then
+echo "aliases=${SUITEEXTRA}-${ARCH}-sbuild" >> "${TEMPFILE}"
+    fi
     if [ -z "$VGNAME" ]; then
         echo "type=directory" >> "${TEMPFILE}"
         echo "directory=${TARGET}" >> "${TEMPFILE}"
@@ -187,9 +185,9 @@ device=/dev/${VGNAME}/buildd-${IDENTIFIER}-${ARCH}
 lvm-snapshot-options=--size ${LVSIZE}
 source-users=buildd
 source-root-users=buildd
-script-config=buildd/config
+profile=buildd
 EOT
-        SCHROOT="schroot -c ${IDENTIFIER}-${ARCH}-sbuild-source -u root -d /root --"
+        SCHROOT="schroot -c source:${IDENTIFIER}-${ARCH}-sbuild -u root -d /root --"
     fi
 
     if \
@@ -209,7 +207,7 @@ setup_schroot_variant() {
     echo VARIANT: $EXTRA
     if ! [ -f "/etc/schroot/chroot.d/buildd-${IDENTIFIER}${EXTRA}-${ARCH}" ] &&
        ! schroot -l | grep ^${IDENTIFIER}${EXTRA}-${ARCH}-sbuild$ -q &&
-       ! schroot -l | grep ^${SUITEEXTRA}-${ARCH}-sbuild$ -q ; then
+       ( [ -z "${SUITEEXTRA}" ] || ! schroot -l | grep ^${SUITEEXTRA}-${ARCH}-sbuild$ -q ) ; then
         setup_schroot
     fi
 }
@@ -458,9 +456,6 @@ if ! [ -f /etc/schroot/conf.buildd ]; then
 fi
 
 do_debootstrap
-# As chroots will be controlled by schroot anyway, the symlink should not be
-# needed anymore.
-#setup_symlink
 setup_schroot
 if ! [ -z "$VGNAME" ] && [ -z "$VARIANT" ]; then
     variants="security backports"
@@ -470,7 +465,7 @@ if ! [ -z "$VGNAME" ] && [ -z "$VARIANT" ]; then
     if [ "$BASE" == "sid" ]; then variants="experimental"; fi
     for EXTRA in $variants; do
         EXTRA=-${EXTRA}
-        SUITEEXTRA=${SUITE}${EXTRA}
+        SUITEEXTRA=""
         if [ "$BASE" = "sid" ]; then SUITEEXTRA="experimental"; fi
 
         setup_schroot_variant
