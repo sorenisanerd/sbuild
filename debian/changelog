@@ -118,6 +118,13 @@ sbuild (0.64.0-1+buildd20130602.0) wheezy; urgency=low
 
  -- Andreas Barth <aba@ayous.org>  Tue, 02 Jun 2013 10:46:27 +0200
 
+sbuild (0.64.0-1+buildd20130522.0) wheezy; urgency=low
+
+  * don't force mailto to be set in .sbuildrc - we don't need it as buildd
+    sets it for us.
+
+ -- Andreas Barth <aba@ayous.org>  Wed, 22 May 2013 22:25:02 +0200
+
 sbuild (0.64.0-1) unstable; urgency=low
 
   [ Thorsten Glaser ]

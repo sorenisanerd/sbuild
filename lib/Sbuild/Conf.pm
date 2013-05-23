@@ -426,10 +426,6 @@ sub setup ($) {
 		my $conf = shift;
 		my $entry = shift;
 		my $key = $entry->{'NAME'};
-
-		die "mailto not set\n"
-		    if !$conf->get('MAILTO') &&
-		    $conf->get('SBUILD_MODE') eq "buildd";
 	    },
 	    GET => sub {
 		my $conf = shift;
