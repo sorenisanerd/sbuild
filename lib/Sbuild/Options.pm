@@ -138,6 +138,12 @@ sub set_options {
 		       "m|maintainer=s" => sub {
 			   $self->set_conf('MAINTAINER_NAME', $_[1]);
 		       },
+		       "mailfrom=s" => sub {
+			   $self->set_conf('MAILFROM', $_[1]);
+		       },
+		       "sbuild-mode=s" => sub {
+			   $self->set_conf('SBUILD_MODE', $_[1]);
+		       },
 		       "k|keyid=s" => sub {
 			   $self->set_conf('KEY_ID', $_[1]);
 		       },

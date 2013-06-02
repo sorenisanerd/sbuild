@@ -519,6 +519,10 @@ sub do_build {
 			"--stats-dir=" . $self->get_conf('HOME') . "/stats",
 			"--dist=" . $dist_config->get('DIST_NAME');
 
+    push @sbuild_args, "--sbuild-mode=buildd";
+    push @sbuild_args, "--mailfrom=".$dist_config->get('MAILFROM') if $dist_config->get('MAILFROM');
+    push @sbuild_args, "--maintainer=".$dist_config->get('MAINTAINER_NAME') if $dist_config->get('MAINTAINER_NAME');
+
     if ($dist_config->get('SIGN_WITH')) {
 	push @sbuild_args, '--keyid=' . $dist_config->get('SIGN_WITH');
     }

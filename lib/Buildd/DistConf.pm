@@ -133,7 +133,14 @@ sub setup ($) {
 	},
 	'SIGN_WITH'				=> {
 	    DEFAULT => undef
-	},);
+	},
+	'MAINTAINER_NAME'			=> {
+	    DEFAULT => undef
+	},
+	'MAILFROM'				=> {
+	    DEFAULT => undef
+	},
+        );
 
     $conf->set_allowed_keys(\%buildd_dist_keys);
 
