@@ -110,7 +110,7 @@ if [ "$1" = "setup-start" ] || [ "$1" = "setup-recover" ]; then
                     domirror "http://ftp.debian.org/debian SUITE-backports-sloppy COMPONENT" ${APT_LIST}
                 else
                     [ -n "${backports_mirror}" ] && domirror "${backports_mirror} SUITE-backports-sloppy COMPONENT" ${APT_LIST}
-                    domirror "http://backports.debian.org/debian SUITE-backports-sloppy COMPONENT" ${APT_LIST}
+                    domirror "http://backports.debian.org/debian-backports/ SUITE-backports-sloppy COMPONENT" ${APT_LIST}
                 fi
                 if [ "${debian_incoming}" != 'no' ]; then
                     if [ "$SUITE" != "squeeze" ]; then
