@@ -77,6 +77,10 @@ sub unset_env () {
     # other unneeded variables that might be set
     delete $ENV{'DISPLAY'};
     delete $ENV{'TERM'};
+    delete $ENV{'XDG_RUNTIME_DIR'};
+    delete $ENV{'XDG_SEAT'};
+    delete $ENV{'XDG_SESSION_ID'};
+    delete $ENV{'XDG_VTNR'};
 }
 
 sub lock_file ($;$) {
