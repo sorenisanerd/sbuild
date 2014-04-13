@@ -77,6 +77,16 @@ if [ "$1" = "setup-start" ] || [ "$1" = "setup-recover" ]; then
             domirror "http://ftp.debian.org/debian SUITE COMPONENT" ${APT_LIST}
             [ "${debian_incoming}" != 'no' ] && domirror "http://incoming.debian.org/debian SUITE COMPONENT" ${APT_LIST}
 
+        elif [ "${SUITE_VARIANT}" = 'lts' ]; then
+            SUITES="${SUITE_BASE} ${SUITE_BASE}-lts"
+            [ -n "${debian_mirror}" ] && domirror "${debian_mirror} SUITE COMPONENT" ${APT_LIST}
+            domirror "http://ftp.debian.org/debian SUITE COMPONENT" ${APT_LIST}
+            if [ "${debian_incoming}" != 'no' ]; then
+                domirror "http://incoming.debian.org/debian SUITE COMPONENT" ${APT_LIST}
+                SUITES="${SUITE_BASE}-lts"
+                domirror "http://incoming.debian.org/debian-buildd buildd-SUITE COMPONENT" ${APT_LIST}
+            fi
+
         elif [ "${SUITE_VARIANT}" = 'security' ]; then
             SUITES="${SUITE_BASE}"
             [ -n "${debian_mirror}" ] && domirror "${debian_mirror} ${SUITE_BASE} COMPONENT" ${APT_LIST}
