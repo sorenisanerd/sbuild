@@ -109,6 +109,12 @@ sbuild (0.64.1-1) unstable; urgency=low
 
  -- Roger Leigh <rleigh@debian.org>  Sun, 13 Oct 2013 19:35:57 +0100
 
+sbuild (0.64.0-1+buildd20140413.1) UNRELEASED; urgency=medium
+
+  * etc/99builddsourceslist: don't run for non "buildd" profiles.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Sun, 13 Jul 2014 16:38:41 +0200
+
 sbuild (0.64.0-1) unstable; urgency=low
 
   [ Thorsten Glaser ]

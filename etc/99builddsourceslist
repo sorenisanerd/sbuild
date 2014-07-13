@@ -22,6 +22,8 @@
 
 set -e
 
+[ "$CHROOT_PROFILE" = "buildd" ] || exit 0
+
 . "$SETUP_DATA_DIR/common-data"
 . "$SETUP_DATA_DIR/common-functions"
 . "$SETUP_DATA_DIR/common-config"
