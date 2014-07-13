@@ -52,7 +52,9 @@ if [ "$AUTH_VERBOSITY" = "verbose" ]; then
 	  VERBOSE="--verbose"
 fi
 
-if [ -f /etc/schroot/conf.buildd ]; then
+if [ -f /etc/schroot/dsa/default-mirror ]; then
+    debian_mirror=$(cat /etc/schroot/dsa/default-mirror)
+elif [ -f /etc/schroot/conf.buildd ]; then
     . /etc/schroot/conf.buildd
 fi
 
@@ -64,7 +66,7 @@ function domirror() {
 }
 
 if [ "$1" = "setup-start" ] || [ "$1" = "setup-recover" ]; then
-    if [ -n "${SUITE_BASE}" ] && [ -f /etc/schroot/conf.buildd ]; then
+    if [ -n "${SUITE_BASE}" ] && ( [ -f /etc/schroot/conf.buildd ] || [ -f /etc/schroot/dsa/default-mirror ] ); then
         APT_LIST="${CHROOT_PATH}/etc/apt/sources.buildd.list"
         APT_CONF="${CHROOT_PATH}/etc/apt/apt.conf.d/99buildd.conf"
         APT_KEYS=""
@@ -225,7 +227,7 @@ if [ "$1" = "setup-start" ] || [ "$1" = "setup-recover" ]; then
 	fi
     fi
 elif [ "$1" = "setup-stop" ]; then
-    if [ -n "${SUITE_BASE}" ] && [ -f /etc/schroot/conf.buildd ]; then
+    if [ -n "${SUITE_BASE}" ] && ( [ -f /etc/schroot/conf.buildd ] || [ -f /etc/schroot/dsa/default-mirror ] ); then
         APT_LIST="${CHROOT_PATH}/etc/apt/sources.buildd.list"
         APT_CONF="${CHROOT_PATH}/etc/apt/apt.conf.d/99buildd.conf"
         rm -f "${APT_LIST}" "${APT_CONF}"
