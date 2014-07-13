@@ -28,7 +28,18 @@ set -e
 . "$SETUP_DATA_DIR/common-functions"
 . "$SETUP_DATA_DIR/common-config"
 
-if [ "$CHROOT_SESSION_PURGE" = "true" ]; then
+# The test below tries to determine if a source chroot is being used.
+# The apt configuration is generated only for non-source chroots.
+#
+# It originally tested CHROOT_SESSION_PURGE, but while it works for
+# LVM based chroots, it doesn't for tar based chroots which always
+# needed to be purged.
+#
+# Future versions of schroot will implement CHROOT_SESSION_SOURCE for
+# a more robust way to check for source chroots.
+#
+# See bug#718127 for more details.
+if ! echo "$CHROOT_DESCRIPTION" | grep -q '(chroot source)' ; then
     case $CHROOT_NAME in
         *-*-*-*-sbuild*)
         SUITE_BASE=$(echo $CHROOT_NAME | cut -f1 -d-)
