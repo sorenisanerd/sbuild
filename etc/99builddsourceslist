@@ -102,14 +102,16 @@ if [ "$1" = "setup-start" ] || [ "$1" = "setup-recover" ]; then
             SUITES="${SUITE_BASE} ${SUITE_BASE}-proposed-updates"
             [ -n "${debian_mirror}" ] && domirror "${debian_mirror} SUITE COMPONENT" ${APT_LIST}
             domirror "http://ftp.debian.org/debian SUITE COMPONENT" ${APT_LIST}
-            [ "${debian_incoming}" != 'no' ] && domirror "http://incoming.debian.org/debian SUITE COMPONENT" ${APT_LIST}
+            if [ "${debian_incoming}" != 'no' ]; then
+                SUITES="${SUITE_BASE}-proposed-updates"
+                domirror "http://incoming.debian.org/debian-buildd buildd-SUITE COMPONENT" ${APT_LIST}
+            fi
 
         elif [ "${SUITE_VARIANT}" = 'lts' ]; then
             SUITES="${SUITE_BASE} ${SUITE_BASE}-lts"
             [ -n "${debian_mirror}" ] && domirror "${debian_mirror} SUITE COMPONENT" ${APT_LIST}
             domirror "http://ftp.debian.org/debian SUITE COMPONENT" ${APT_LIST}
             if [ "${debian_incoming}" != 'no' ]; then
-                domirror "http://incoming.debian.org/debian SUITE COMPONENT" ${APT_LIST}
                 SUITES="${SUITE_BASE}-lts"
                 domirror "http://incoming.debian.org/debian-buildd buildd-SUITE COMPONENT" ${APT_LIST}
             fi
@@ -134,11 +136,6 @@ if [ "$1" = "setup-start" ] || [ "$1" = "setup-recover" ]; then
                 domirror "http://backports.debian.org/debian-backports/ SUITE-backports COMPONENT" ${APT_LIST}
             fi
             if [ "${debian_incoming}" != 'no' ]; then
-                if [ "$SUITE" != "squeeze" ]; then
-                    domirror "http://incoming.debian.org/debian SUITE-backports COMPONENT" ${APT_LIST}
-                else
-                    domirror "http://incoming.debian.org/debian-backports SUITE-backports COMPONENT" ${APT_LIST}
-                fi
                 domirror "http://incoming.debian.org/debian-buildd buildd-SUITE-backports COMPONENT" ${APT_LIST}
             fi
             if [ "$(echo ${SUITE_VARIANT} | cut -d - -f 2)" = "sloppy" ]; then
@@ -150,11 +147,6 @@ if [ "$1" = "setup-start" ] || [ "$1" = "setup-recover" ]; then
                     domirror "http://backports.debian.org/debian-backports/ SUITE-backports-sloppy COMPONENT" ${APT_LIST}
                 fi
                 if [ "${debian_incoming}" != 'no' ]; then
-                    if [ "$SUITE" != "squeeze" ]; then
-                        domirror "http://incoming.debian.org/debian SUITE-backports-sloppy COMPONENT" ${APT_LIST}
-                    else
-                        domirror "http://incoming.debian.org/debian-backports SUITE-backports-sloppy COMPONENT" ${APT_LIST}
-                    fi
                     domirror "http://incoming.debian.org/debian-buildd buildd-SUITE-backports-sloppy COMPONENT" ${APT_LIST}
                 fi
             fi
@@ -174,8 +166,8 @@ if [ "$1" = "setup-start" ] || [ "$1" = "setup-recover" ]; then
                 SUITES="unstable experimental"
             fi
             [ -n "${debian_mirror}" ] && domirror "${debian_mirror} SUITE COMPONENT" ${APT_LIST}
+            domirror "http://ftp.debian.org/debian SUITE COMPONENT" ${APT_LIST}
             if [ "${debian_incoming}" != 'no' ]; then
-                domirror "http://incoming.debian.org/debian SUITE COMPONENT" ${APT_LIST}
                 domirror "http://incoming.debian.org/debian-buildd buildd-SUITE COMPONENT" ${APT_LIST}
             fi
 
