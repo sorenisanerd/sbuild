@@ -21,6 +21,7 @@
 #####################################################################
 
 set -e
+shopt -s extglob
 
 [ "$CHROOT_PROFILE" = "buildd" ] || exit 0
 
@@ -40,17 +41,28 @@ set -e
 #
 # See bug#718127 for more details.
 if ! echo "$CHROOT_DESCRIPTION" | grep -q '(source chroot)' ; then
-    case $CHROOT_NAME in
+    CHROOT_ALIAS="${CHROOT_ALIAS/#experimental-/sid-experimental-}"
+    case $CHROOT_ALIAS in
+        +([^-])-+([^-])-@(kfreebsd|hurd)-*-sbuild*)
+        SUITE_BASE=$(echo $CHROOT_ALIAS | cut -f1 -d-)
+        SUITE_VARIANT=$(echo $CHROOT_ALIAS | cut -f2 -d-)
+        ;;
         *-*-*-*-sbuild*)
-        SUITE_BASE=$(echo $CHROOT_NAME | cut -f1 -d-)
-        SUITE_VARIANT=$(echo $CHROOT_NAME | cut -f2,3 -d-)
+        SUITE_BASE=$(echo $CHROOT_ALIAS | cut -f1 -d-)
+        SUITE_VARIANT=$(echo $CHROOT_ALIAS | cut -f2,3 -d-)
+        ;;
+        +([^-])-@(kfreebsd|hurd)-*-sbuild*)
+        SUITE_BASE=$(echo $CHROOT_ALIAS | cut -f1 -d-)
+        if [ ${SUITE_BASE} != "sid" ]; then
+            SUITE_VARIANT="proposed-updates"
+        fi
         ;;
         *-*-*-sbuild*)
-        SUITE_BASE=$(echo $CHROOT_NAME | cut -f1 -d-)
-        SUITE_VARIANT=$(echo $CHROOT_NAME | cut -f2 -d-)
+        SUITE_BASE=$(echo $CHROOT_ALIAS | cut -f1 -d-)
+        SUITE_VARIANT=$(echo $CHROOT_ALIAS | cut -f2 -d-)
         ;;
         *-*-sbuild*)
-        SUITE_BASE=$(echo $CHROOT_NAME | cut -f1 -d-)
+        SUITE_BASE=$(echo $CHROOT_ALIAS | cut -f1 -d-)
         if [ ${SUITE_BASE} != "sid" ]; then
             SUITE_VARIANT="proposed-updates"
         fi
