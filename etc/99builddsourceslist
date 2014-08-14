@@ -39,7 +39,7 @@ set -e
 # a more robust way to check for source chroots.
 #
 # See bug#718127 for more details.
-if ! echo "$CHROOT_DESCRIPTION" | grep -q '(chroot source)' ; then
+if ! echo "$CHROOT_DESCRIPTION" | grep -q '(source chroot)' ; then
     case $CHROOT_NAME in
         *-*-*-*-sbuild*)
         SUITE_BASE=$(echo $CHROOT_NAME | cut -f1 -d-)
