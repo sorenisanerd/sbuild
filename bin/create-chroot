@@ -135,7 +135,7 @@ do_debootstrap() {
     sudo debootstrap \
         --arch=$ARCH \
         --variant=buildd \
-        --include=sudo,fakeroot,build-essential,debfoster,apt \
+        --include=fakeroot,build-essential,debfoster,apt \
         $BASE \
         $TARGET \
         $MIRROR
