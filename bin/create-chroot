@@ -390,7 +390,6 @@ setup_debfoster() {
 build-essential
 debfoster
 fakeroot
-sudo
 EOT
 
 # Semi consensus: packages should depend on gcc-multilib if they
