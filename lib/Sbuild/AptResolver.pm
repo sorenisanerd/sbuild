@@ -78,6 +78,7 @@ sub install_deps {
     } else {
 	push @apt_args, 'install', $dummy_pkg_name;
     }
+
     if (!$self->run_apt(@apt_args)) {
 	$self->log("Package installation failed\n");
 	if (defined ($self->get('Session')->get('Session Purged')) &&
