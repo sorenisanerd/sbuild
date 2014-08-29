@@ -58,6 +58,8 @@ sub new {
     # Typically set by Sbuild::Build, but not outside a build context.
     $self->set('Host Arch', $self->get_conf('HOST_ARCH'));
     $self->set('Build Arch', $self->get_conf('BUILD_ARCH'));
+    $self->set('Initial Foreign Arches', $self->get_foreign_architectures());
+    $self->set('Added Foreign Arches', {});
 
     my $dummy_archive_list_file = $session->get('Location') .
         '/etc/apt/sources.list.d/sbuild-build-depends-archive.list';
@@ -134,10 +136,47 @@ sub setup {
     $self->cleanup_apt_archive();
 }
 
+sub get_foreign_architectures {
+    my $self = shift;
+
+    my $session = $self->get('Session');
+
+    my ($tmpfh, $tmpfilename) = tempfile(DIR => $session->get('Location') . "/tmp");
+    $session->run_command({ COMMAND => ['dpkg', '--print-foreign-architectures'],
+                            USER => 'root',
+                            STREAMOUT => $tmpfh});
+    seek $tmpfh, 0, SEEK_SET;
+    my @existing_foreign_arches;
+    while(<$tmpfh>)
+    {
+        chomp;
+        next unless $_;
+        push @existing_foreign_arches, $_;
+    }
+    close $tmpfh;
+
+    if ($?)
+    {
+        $self->log_error("Failed to get dpkg foreign-architecture config\n");
+        return {};
+    }
+
+    $self->log("Initial foreign arches: '@existing_foreign_arches'\n");
+
+    my %set;
+    foreach (@existing_foreign_arches) { $set{$_} = 1; }
+    return \%set;
+}
+
 sub add_foreign_architecture {
 
     my $self = shift;
     my $arch = shift;
+
+    # if we already have this architecture, we're done
+    my $initial_foreign_arches = $self->get('Initial Foreign Arches');
+    my $added_foreign_arches   = $self->get('Added Foreign Arches');
+    return if $initial_foreign_arches->{$arch} || $added_foreign_arches->{$arch};
 
     my $session = $self->get('Session');
 
@@ -151,11 +190,32 @@ sub add_foreign_architecture {
                             USER => 'root' });
     if ($?)
     {
-        $self->log_error("E: Failed to set dpkg foreign-architecture config\n");
+        $self->log_error("Failed to set dpkg foreign-architecture config\n");
         return 0;
     }
+    $added_foreign_arches->{$arch} = 1;
     $self->log("Adding dpkg foreign-architecture $arch\n");
     return 1;
+}
+
+sub cleanup_foreign_architectures {
+    my $self = shift;
+
+    my $added_foreign_arches = $self->get('Added Foreign Arches');
+
+    my $session = $self->get('Session');
+
+    foreach my $arch (keys %{$added_foreign_arches}) {
+        $self->log("Removing foreign architecture $arch\n");
+        $session->run_command({ COMMAND => ['dpkg', '--remove-architecture', $arch],
+                                USER => 'root',
+                                DIR => '/'});
+        if ($?)
+        {
+            $self->log_error("Failed to remove dpkg foreign-architecture $arch\n");
+            return;
+        }
+    }
 }
 
 sub setup_dpkg {
@@ -173,8 +233,8 @@ sub cleanup {
 
     #cleanup dpkg cross-config
     # rm /etc/dpkg/dpkg.cfg.d/sbuild
-    # later: dpkg --delete-foreign-architecture $self->get('Host Arch')
     $self->cleanup_apt_archive();
+    $self->cleanup_foreign_architectures();
 }
 
 sub update {
