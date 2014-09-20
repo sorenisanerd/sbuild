@@ -31,6 +31,7 @@ sbuild \- build debian packages from source
 .RB [ \-\-arch=\fIarchitecture\fP ]
 .RB [ \-\-build=\fIarchitecture\fP ]
 .RB [ \-\-host=\fIarchitecture\fP ]
+.RB [ \-\-profiles=\fIprofile[,...]\fP ]
 .RB [ \-s \[or] \-\-source ]
 .RB [ \-\-force\-orig\-source ]
 .RB [ \-\-make\-binNMU=\fIchangelog-entry\fP ]
@@ -263,6 +264,11 @@ log file, but print everything to stdout. Also do not send any log mails.
 .BR \-p ", " "\-\-purge=\fIpurge-mode\fP"
 Convenience option to set \fIpurge-mode\fR for build directory, build
 dependencies and session.
+.TP
+.BR \-\-profiles=\fIprofile[,...]\fP"
+Specify the profile(s) we build, as a comma-separated list. Defaults to the
+space separated list of profiles in the \fBDEB_BUILD_PROFILES\fP environment
+variable.
 .TP
 .BR "\-\-purge\-build=\fIpurge-mode\fP"
 \fIpurge-mode\fR determines if the build directory will be deleted after a

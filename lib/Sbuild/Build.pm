@@ -267,6 +267,7 @@ sub run {
 	# Acquire the architectures we're building for and on.
 	$self->set('Host Arch', $self->get_conf('HOST_ARCH'));
 	$self->set('Build Arch', $self->get_conf('BUILD_ARCH'));
+	$self->set('Build Profiles', $self->get_conf('BUILD_PROFILES'));
 
 	my $dist = $self->get_conf('DISTRIBUTION');
 	if (!defined($dist) || !$dist) {
@@ -464,6 +465,7 @@ sub run_chroot_session {
 	$resolver->set('Arch', $self->get_conf('ARCH'));
 	$resolver->set('Host Arch', $self->get_conf('HOST_ARCH'));
 	$resolver->set('Build Arch', $self->get_conf('BUILD_ARCH'));
+	$resolver->set('Build Profiles', $self->get_conf('BUILD_PROFILES'));
 	$resolver->set('Chroot Build Dir', $self->get('Chroot Build Dir'));
 	$self->set('Dependency Resolver', $resolver);
 
@@ -1504,6 +1506,13 @@ sub build {
 	push (@{$buildcmd}, '-a' . $host_arch);
     }
 
+    if (defined($self->get_conf('BUILD_PROFILES')) &&
+	$self->get_conf('BUILD_PROFILES')) {
+	my $profiles = $self->get_conf('BUILD_PROFILES');
+	$profiles =~ tr/ /,/;
+	push (@{$buildcmd}, '-P' . $profiles);
+    }
+
     if (defined($self->get_conf('PGP_OPTIONS')) &&
 	$self->get_conf('PGP_OPTIONS')) {
 	if (ref($self->get_conf('PGP_OPTIONS')) eq 'ARRAY') {
@@ -1986,6 +1995,8 @@ sub generate_stats {
     $self->add_stat('Machine Architecture', $self->get_conf('ARCH'));
     $self->add_stat('Host Architecture', $self->get('Host Arch'));
     $self->add_stat('Build Architecture', $self->get('Build Arch'));
+    $self->add_stat('Build Profiles', $self->get('Build Profiles'))
+        if $self->get('Build Profiles');
     my @keylist=keys %{$resolver->get('Initial Foreign Arches')};
     push @keylist, keys %{$resolver->get('Added Foreign Arches')};
     my $foreign_arches = join ' ', @keylist;
@@ -2257,6 +2268,7 @@ sub open_build_log {
     $self->log("Machine Architecture: " . $self->get_conf('ARCH') . "\n");
     $self->log("Host Architecture: " . $self->get('Host Arch') . "\n");
     $self->log("Build Architecture: " . $self->get('Build Arch') . "\n");
+    $self->log("Build Profiles: " . $self->get('Build Profiles') . "\n") if $self->get('Build Profiles');
     $self->log("\n");
 }
 

@@ -58,6 +58,7 @@ sub new {
     # Typically set by Sbuild::Build, but not outside a build context.
     $self->set('Host Arch', $self->get_conf('HOST_ARCH'));
     $self->set('Build Arch', $self->get_conf('BUILD_ARCH'));
+    $self->set('Build Profiles', $self->get_conf('BUILD_PROFILES'));
     $self->set('Initial Foreign Arches', {});
     $self->set('Added Foreign Arches', {});
 
@@ -804,14 +805,18 @@ EOF
 			      reduce_arch => 1,
 			      host_arch => $self->get('Host Arch'),
 			      build_arch => $self->get('Build Arch'),
-			      build_dep => 1);
+			      build_dep => 1,
+			      reduce_profiles => 1,
+			      build_profiles => [ split / /, $self->get('Build Profiles') ]);
     my $negative = deps_parse(join(", ", @negative,
 				   @negative_arch, @negative_indep),
 			      reduce_arch => 1,
 			      host_arch => $self->get('Host Arch'),
 			      build_arch => $self->get('Build Arch'),
 			      build_dep => 1,
-			      union => 1);
+			      union => 1,
+			      reduce_profiles => 1,
+			      build_profiles => [ split / /, $self->get('Build Profiles') ]);
 
     $self->log("Merged Build-Depends: $positive\n") if $positive;
     $self->log("Merged Build-Conflicts: $negative\n") if $negative;

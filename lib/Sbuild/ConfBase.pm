@@ -169,6 +169,13 @@ sub init_allowed_keys {
 	    DEFAULT => $native_arch,
 	    HELP => 'Build architecture (Arch we are building on).'
 	},
+	'BUILD_PROFILES'        => {
+	    TYPE => 'STRING',
+	    VARNAME => 'build_profiles',
+	    GROUP => 'Build options',
+	    DEFAULT => $ENV{'DEB_BUILD_PROFILES'},
+	    HELP => 'Build profiles. Separated by spaces.'
+	},
 	'HOSTNAME'				=> {
 	    TYPE => 'STRING',
 	    GROUP => '__INTERNAL',

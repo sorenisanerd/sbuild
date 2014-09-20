@@ -22,13 +22,11 @@ sbuild (0.65.0-1) UNRELEASED; urgency=medium
   * Accept 0 as a source version number (Closes: #712627)
   * Add DEP-8 autopkgtest to build procenv. (Closes: #705926)
 
+  [ Johannes Schauer ]
+  * sbuild:
+    - Add build-profiles support (Closes: 731798)
+
  -- Benjamin Drung <benjamin.drung@profitbricks.com>  Thu, 09 Oct 2014 16:25:29 +0200
-
-sbuild (0.64.3-2) unstable; urgency=medium
-
-  * Ensure foreign-arch logging is correct (Closes: #763635)
-
- -- Wookey <wookey@debian.org>  Wed, 01 Oct 2014 17:32:42 +0100
 
 sbuild (0.64.3-1) unstable; urgency=medium
 
@@ -36,7 +34,7 @@ sbuild (0.64.3-1) unstable; urgency=medium
 
   [ Wookey ]
   * sbuild:
-    - Add support for multiarch builds (enable foreign arch 'arch' 
+    - Add support for multiarch builds (enable foreign arch 'arch'
        if Build-Depends includes specific foo:arch dependency)
     - Enable chroot setup commands to be run as root
     (Closes: #608840,#607228)

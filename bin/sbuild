@@ -115,6 +115,8 @@ sub main () {
 	    if $conf->get('DEBUG' && defined($conf->get('HOST_ARCH')));
 	print "Selected build architecture " . $conf->get('BUILD_ARCH') . "\n"
 	    if $conf->get('DEBUG' && defined($conf->get('BUILD_ARCH')));
+	print "Selected build profiles " . $conf->get('BUILD_PROFILES') . "\n"
+	    if $conf->get('DEBUG' && defined($conf->get('BUILD_PROFILES')));
 
 	$job = Sbuild::Build->new($jobname, $conf);
 	$job->set('Pkg Status Trigger', \&status_trigger);
