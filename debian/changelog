@@ -1,3 +1,12 @@
+sbuild (0.64.3-1) UNRELEASED; urgency=medium
+
+  [ Wookey ]
+  * sbuild:
+    - Add support for multiarch builds (enable foreign arch 'arch' 
+       if Build-Depends includes specific foo:arch dependency)
+
+ -- Wookey <wookey@debian.org>  Sat, 20 Sep 2014 00:38:58 +0100
+
 sbuild (0.64.2-1) unstable; urgency=low
 
   * Team upload.
