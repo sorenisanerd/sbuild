@@ -68,6 +68,8 @@ sbuild \- build debian packages from source
 .RB [ \-\-piuparts\-root\-args=\fIoptions\fP ]
 .RB [ \-\-pre\-build\-commands=\fIstring\fP ]
 .RB [ \-\-chroot\-setup\-commands=\fIstring\fP ]
+.RB [ \-\-starting\-build\-commands=\fIstring\fP ]
+.RB [ \-\-finished\-build\-commands=\fIstring\fP ]
 .RB [ \-\-chroot\-cleanup\-commands=\fIstring\fP ]
 .RB [ \-\-post\-build\-commands=\fIstring\fP ]
 .RB [ \-\-log\-external\-command\-output ]
@@ -358,8 +360,16 @@ Run this command before a build starts. This option can be used multiple times
 to add multiple commands.
 .TP
 .BR \-\-chroot\-setup\-commands=\fIstring\fP
-Run these commands when a chroot is setup, before deps are installed. This
+Run these commands when a chroot is setup, before dependencies are installed. This
 option can be used multiple times to add multiple commands.
+.TP
+.BR \-\-starting\-build\-commands=\fIstring\fP
+Run these commands after dependencies are installed, just before the package 
+build starts. This option can be used multiple times to add multiple commands.
+.TP
+.BR \-\-finished\-build\-commands=\fIstring\fP
+Run these commands immediately after the timed package build finishes. 
+This option can be used multiple times to add multiple commands.
 .TP
 .BR \-\-chroot\-cleanup\-commands=\fIstring\fP
 Run these commands when a chroot is cleaned up, before build directory is
@@ -411,6 +421,46 @@ run is done through the appropriate options given on the command line and
 through the use of the configuration files. In the configuration file, the list
 of commands to run are placed in a hash of arrays of arrays of strings
 corresponding to the commands to run.
+.PP
+There are three sets of commands. The \fIpre/post\-build\-\fP commands are run 
+external to the chroot. The \fIchroot\-setup/cleanup\-\fP commands and
+\fIStarting/Finished\-Build\-\fP commands are run inside the chroot. They are all
+run as root except the \fIStarting/Finishing\-build-\fP commands, which are run 
+as the current sbuild user.
+.PP
+Here is a summary of the ordering, user, internal/external to chroot for each command hook
+.nf
+.br
+\fIInitialise chroot session\fP
+.br
+\f[CB]\-\-pre\-build\-commands       root  outside chroot\fP
+.br
+\fISetup the chroot and variables\fP
+.br
+\f[CB]\-\-chroot\-setup\-commands    root  inside chroot\fP
+.br
+\fIUpdate and upgrade packages\fP
+.br
+\fIInstall Dependencies\fP
+.br
+\f[CB]\-\-starting\-build\-commands  user  inside chroot\fP
+.br
+\fIDo actual build (dpkg-buildpackage)\fP
+.br
+\f[CB]\-\-finished\-build\-commands  user  inside chroot\fP
+.br
+\fIRun lintian (if configured)\fP
+.br
+\fICleanup build files and dependencies\fP
+.br
+\f[CB]\-\-chroot\-cleanup\-commands  root  inside chroot\fP
+.br
+\fIClose schroot session\fP
+.br
+\fIRun piuparts (if configured)\fP
+.br
+\f[CB]\-\-post\-build\-commands      root  outside chroot\fP
+.fi
 .PP
 Here's an example of how to edit the configuration files to run "foo" and "bar"
 with arguments before a build starts.

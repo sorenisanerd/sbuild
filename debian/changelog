@@ -4,6 +4,13 @@ sbuild (0.64.3-1) UNRELEASED; urgency=medium
   * sbuild:
     - Add support for multiarch builds (enable foreign arch 'arch' 
        if Build-Depends includes specific foo:arch dependency)
+    - Enable chroot setup commands to be run as root
+    (Closes: #608840,#607228)
+    - Document command hooks
+
+  [ Johannes Schauer ]
+  * sbuild:
+    - Add starting-/finished- build-commands hooks (Closes: #760991)
 
  -- Wookey <wookey@debian.org>  Sat, 20 Sep 2014 00:38:58 +0100
 

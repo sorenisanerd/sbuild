@@ -267,6 +267,16 @@ sub set_options {
 			   push(@{${$self->get_conf('EXTERNAL_COMMANDS')}{"chroot-setup-commands"}},
 				\@command);
 		       },
+			"starting-build-commands=s" => sub {
+			   my @command = split(/\s+/, $_[1]);
+			   push(@{${$self->get_conf('EXTERNAL_COMMANDS')}{"starting-build-commands"}},
+				\@command);
+		       },
+			"finished-build-commands=s" => sub {
+			   my @command = split(/\s+/, $_[1]);
+			   push(@{${$self->get_conf('EXTERNAL_COMMANDS')}{"finished-build-commands"}},
+				\@command);
+		       },
 			"chroot-cleanup-commands=s" => sub {
 			   my @command = split(/\s+/, $_[1]);
 			   push(@{${$self->get_conf('EXTERNAL_COMMANDS')}{"chroot-cleanup-commands"}},

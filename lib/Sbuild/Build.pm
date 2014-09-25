@@ -508,6 +508,15 @@ sub run_chroot_session_locked {
 	my $session = $self->get('Session');
 	my $resolver = $self->get('Dependency Resolver');
 
+	# Run specified chroot setup commands
+	$self->check_abort();
+	$self->run_external_commands("chroot-setup-commands",
+				     $self->get_conf('LOG_EXTERNAL_COMMAND_OUTPUT'),
+				     $self->get_conf('LOG_EXTERNAL_COMMAND_ERROR'));
+
+	$self->check_abort();
+
+
 	$self->check_abort();
 	$resolver->setup();
 
@@ -614,12 +623,6 @@ sub run_fetch_install_packages {
 	    $msg .= "run via chroot-setup-commands.\n";
 	    $self->log_warning($msg);
 	}
-
-	# Run specified chroot setup commands
-	$self->check_abort();
-	$self->run_external_commands("chroot-setup-commands",
-				     $self->get_conf('LOG_EXTERNAL_COMMAND_OUTPUT'),
-				     $self->get_conf('LOG_EXTERNAL_COMMAND_ERROR'));
 
 	$self->check_abort();
 	$self->set('Install Start Time', time);
@@ -1058,6 +1061,7 @@ sub run_command {
     my $log_output = shift;
     my $log_error = shift;
     my $chroot = shift;
+    my $rootuser = shift;
 
     # Used to determine if we are to log from commands
     my ($out, $err, $defaults);
@@ -1080,7 +1084,7 @@ sub run_command {
 	    $err = $defaults->{'STREAMERR'} if ($log_error);
 	    $self->get('Session')->run_command(
 		{ COMMAND => \@{$command},
-		    USER => $self->get_conf('BUILD_USER'),
+		    USER => ($rootuser ? 'root' : $self->get_conf('BUILD_USER')),
 		    PRIORITY => 0,
 		    STREAMOUT => $out,
 		    STREAMERR => $err,
@@ -1111,13 +1115,22 @@ sub run_external_commands {
     return 1 if !(@commands);
 
     # Create appropriate log message and determine if the commands are to be
-    # run inside the chroot or not.
+    # run inside the chroot or not, and as root or not.
     my $chroot = 0;
+    my $rootuser = 1;  
     if ($stage eq "pre-build-commands") {
 	$self->log_subsection("Pre Build Commands");
     } elsif ($stage eq "chroot-setup-commands") {
 	$self->log_subsection("Chroot Setup Commands");
 	$chroot = 1;
+    } elsif ($stage eq "starting-build-commands") {
+	$self->log_subsection("Starting Timed Build Commands");
+	$chroot = 1;
+	$rootuser = 0;
+    } elsif ($stage eq "finished-build-commands") {
+	$self->log_subsection("Finished Timed Build Commands");
+	$chroot = 1;
+	$rootuser = 0;
     } elsif ($stage eq "chroot-cleanup-commands") {
 	$self->log_subsection("Chroot Cleanup Commands");
 	$chroot = 1;
@@ -1151,7 +1164,7 @@ sub run_external_commands {
 	}
   my $command_str = join(" ", @{$command});
 	$self->log_subsubsection("$command_str");
-	$returnval = $self->run_command($command, $log_output, $log_error, $chroot);
+	$returnval = $self->run_command($command, $log_output, $log_error, $chroot, $rootuser);
 	$self->log("\n");
 	if (!$returnval) {
 	    $self->log_error("Command '$command_str' failed to run.\n");
@@ -1441,6 +1454,10 @@ sub build {
 	return 0;
     }
 
+    $self->run_external_commands("starting-build-commands",
+				     $self->get_conf('LOG_EXTERNAL_COMMAND_OUTPUT'),
+				     $self->get_conf('LOG_EXTERNAL_COMMAND_ERROR'));
+
     $self->set('Build Start Time', time);
     $self->set('Build End Time', $self->get('Build Start Time'));
 
@@ -1621,6 +1638,11 @@ sub build {
     my $finish_date = strftime("%Y%m%d-%H%M",localtime($self->get('Build End Time')));
     $self->log_sep();
     $self->log("Build finished at $finish_date\n");
+
+
+    $self->run_external_commands("finished-build-commands",
+				     $self->get_conf('LOG_EXTERNAL_COMMAND_OUTPUT'),
+				     $self->get_conf('LOG_EXTERNAL_COMMAND_ERROR'));
 
     my @space_files = ("$dscdir");
 

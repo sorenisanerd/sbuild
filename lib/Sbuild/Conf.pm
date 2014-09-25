@@ -975,6 +975,8 @@ sub setup ($) {
 	    DEFAULT => {
 		"pre-build-commands" => [],
 		"chroot-setup-commands" => [],
+		"starting-build-commands" => [],
+		"finished-build-commands" => [],
 		"chroot-cleanup-commands" => [],
 		"post-build-commands" => [],
 	    },
@@ -986,6 +988,14 @@ sub setup ($) {
         [\'bar\', \'arg1\', \'arg2\', \'arg3\'],
     ],
     "chroot-setup-commands" => [
+        [\'foo\', \'arg1\', \'arg2\'],
+        [\'bar\', \'arg1\', \'arg2\', \'arg3\'],
+    ],
+    "starting-build-commands" => [
+        [\'foo\', \'arg1\', \'arg2\'],
+        [\'bar\', \'arg1\', \'arg2\', \'arg3\'],
+    ],
+    "finished-build-commands" => [
         [\'foo\', \'arg1\', \'arg2\'],
         [\'bar\', \'arg1\', \'arg2\', \'arg3\'],
     ],
@@ -1097,7 +1107,7 @@ if (\%individual_stalled_pkg_timeout) {
 END
 
     my $custom_setup = <<END;
-push(\@{\${\$conf->get('EXTERNAL_COMMANDS')}{"chroot-setup-commands"}},
+push(\@{\${\$conf->get('EXTERNAL_COMMANDS')}{"chroot-user-setup-commands"}},
 \$chroot_setup_script) if (\$chroot_setup_script);
 
     # Trigger log directory creation if needed
