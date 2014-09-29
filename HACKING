@@ -44,7 +44,9 @@ Releasing
 
 New upstream releases:
 
-• The code must pass the testsuite (make check).
+• The code must pass the testsuite (run 'make check' after ./configure). 
+  To enable checks which need a local schroot setup use 
+  ./configure --enable-chroot-checks
 
 • The NEWS file must be up to date, and have the current version
   number present on the line starting with "Welcome to sbuild
@@ -60,9 +62,12 @@ New upstream releases:
   release tag (generated with git-tag-release) to get the package name
   and version number.
 
-• Run ./configure --enable-maintainer-mode and then "make distcheck"
-  to test and package up the release
+• Run ./configure and then "make dist" to generate the release tarball.
 
 New Debian releases:
 
-• Run debian/git-tag-debian to tag the release.
+• Copy the release tarball out of the build dir, renaming to 
+  sbuild_<ver>.orig.tar.gz then unpack it and use it to build the Debian release.
+
+• Run debian/git-tag-debian to tag the release, then dpkg-buildpackage.
+
