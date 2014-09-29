@@ -1,11 +1,20 @@
 NEWS                                                            -*- outline -*-
 ----
 
-Welcome to sbuild 0.64.2.  Please read these release notes carefully.
+Welcome to sbuild 0.64.3.  Please read these release notes carefully.
 
 Full installation instructions are provided in the INSTALL file.  The
 README file also contains more specific notes regarding building and
 configuration.
+
+* Major changes in 0.64.3:
+
+  1) Add support for multiarch builds. Explicit build-deps on
+      foreign-arch packages enable that arch for the build.
+  
+  2) Command hook changes: chroot-setup-commands run as root. 2 new
+      user -command hooks run immediately before/after inner build
+      (--starting-build-commands/--finished-build-commands).
 
 * Major changes in 0.64.2:
 

@@ -1,4 +1,6 @@
-sbuild (0.64.3-1) UNRELEASED; urgency=medium
+sbuild (0.64.3-1) unstable; urgency=medium
+
+  * Team upload
 
   [ Wookey ]
   * sbuild:
@@ -7,6 +9,7 @@ sbuild (0.64.3-1) UNRELEASED; urgency=medium
     - Enable chroot setup commands to be run as root
     (Closes: #608840,#607228)
     - Document command hooks
+    - Add Wookey to sbuild team/uploaders
 
   [ Johannes Schauer ]
   * sbuild:
