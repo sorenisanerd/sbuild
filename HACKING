@@ -66,10 +66,15 @@ New upstream releases:
 
 • Run ./configure and then "make dist" to generate the release tarball.
 
+
 New Debian releases:
 
-• Copy the release tarball out of the build dir, renaming to
-  sbuild_<ver>.orig.tar.gz then unpack it and use it to build the Debian release.
+• Run debian/git-tag-debian in the git source to tag the debian
+  release.
 
-• Run debian/git-tag-debian to tag the release, then dpkg-buildpackage.
+• Copy the upstream (make dist) release tarball out of the build dir,
+  rename it to sbuild_<ver>.orig.tar.gz then unpack it and use it to
+  build the Debian release (with the usual tools such as
+  dpkg-buildpackage, or sbuild).
+
 
