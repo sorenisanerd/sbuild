@@ -37,7 +37,7 @@ for dist in unstable; do
     # Test source building (note: no epoch or revision)
     for pkg in debianutils; do
 	{
-	    ver="$(apt-cache showsrc "$pkg" | grep ^Version: |  head -n 1 | sed -e 's/^Version:[[:space:]]*\(.*\)$/\1/')"
+	    ver="$(apt-cache policy "$pkg" | grep "\*\*\*" |  awk '{ print $2 }' | sed -e 's/^Version:[[:space:]]*\(.*\)$/\1/')"
 	    apt-get source $pkg
 	    cd "${pkg}-${ver}"
 	    PATH="@abs_top_srcdir@/bin:$PATH" PERL5LIB="@abs_top_srcdir@/lib" "@abs_top_srcdir@/bin/sbuild" --batch -s -A -d"$dist"
