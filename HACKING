@@ -44,9 +44,11 @@ Releasing
 
 New upstream releases:
 
-• The code must pass the testsuite (run 'make check' after ./configure). 
-  To enable checks which need a local schroot setup use 
-  ./configure --enable-chroot-checks
+• The code must pass the testsuite (run 'sudo make check' after
+  ./configure --enable-chroot-checks). This requires a local schroot
+  called 'unstable' setup. These checks can take some time to
+  run. Plain "./configure; ./bootstrap; make check" runs only the
+  checks that can be done without schroot, which are very quick.
 
 • The NEWS file must be up to date, and have the current version
   number present on the line starting with "Welcome to sbuild
@@ -66,7 +68,7 @@ New upstream releases:
 
 New Debian releases:
 
-• Copy the release tarball out of the build dir, renaming to 
+• Copy the release tarball out of the build dir, renaming to
   sbuild_<ver>.orig.tar.gz then unpack it and use it to build the Debian release.
 
 • Run debian/git-tag-debian to tag the release, then dpkg-buildpackage.
