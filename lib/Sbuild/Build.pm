@@ -804,6 +804,7 @@ sub fetch_source_files {
     my $pkg = $self->get('Package');
     my $ver = $self->get('OVersion');
     my $host_arch = $self->get('Host Arch');
+    my $resolver = $self->get('Dependency Resolver');
 
     my ($dscarchs, $dscpkg, $dscver, @fetched);
 
@@ -964,8 +965,9 @@ sub fetch_source_files {
     $build_conflicts_indep =~ s/\n\s+/ /g if defined $build_conflicts_indep;
 
 
+    $self->log_subsubsection("Check foreign Arches");
     # Check for cross-arch dependencies
-    # parse $build_depends* for explicit :arch and add the foreign arch, as needed
+    # parse $build_depends* for explicit :arch and add the foreign arches, as needed
     sub get_explicit_arches
     {
         my $visited_deps = pop;
@@ -974,7 +976,7 @@ sub fetch_source_files {
         my %set;
         for my $dep (@deps)
         {
-            # I make sure to break any recursion in the deps data structure
+            # Break any recursion in the deps data structure (is this overkill?)
             next if !defined $dep;
             my $id = ref($dep) ? refaddr($dep) : "str:$dep";
             next if $visited_deps->{$id};
@@ -1008,13 +1010,17 @@ sub fetch_source_files {
     my $added_any_new;
     for my $foreign_arch(@foreign_arches)
     {
-        my $resolver = $self->get('Dependency Resolver');
         $resolver->add_foreign_architecture($foreign_arch);
         $added_any_new = 1;
     }
+
+    my @keylist=keys %{$resolver->get('Initial Foreign Arches')};
+    $self->log( 'Initial Foreign Architectures: ');
+    $self->log( join ' ', @keylist, "\n");
+    $self->log('Foreign Architectures in build-deps: ');
+    $self->log( join ' ', @foreign_arches, "\n\n");
+
     $self->run_chroot_update() if $added_any_new;
-
-
 
 
 
@@ -1041,6 +1047,7 @@ sub fetch_source_files {
     }
 
     debug("Arch check ok ($host_arch included in $dscarchs)\n");
+
 
     $self->set('Build Depends', $build_depends);
     $self->set('Build Depends Arch', $build_depends_arch);
@@ -1961,6 +1968,7 @@ sub add_stat {
 
 sub generate_stats {
     my $self = shift;
+    my $resolver = $self->get('Dependency Resolver');
 
     $self->add_stat('Job', $self->get('Job'));
     $self->add_stat('Package', $self->get('Package'));
@@ -1969,6 +1977,10 @@ sub generate_stats {
     $self->add_stat('Machine Architecture', $self->get_conf('ARCH'));
     $self->add_stat('Host Architecture', $self->get('Host Arch'));
     $self->add_stat('Build Architecture', $self->get('Build Arch'));
+    my @keylist=keys %{$resolver->get('Initial Foreign Arches')};
+    push @keylist, keys %{$resolver->get('Added Foreign Arches')};
+    my $foreign_arches = join ' ', @keylist;
+    $self->add_stat('Foreign Architectures', $foreign_arches );
     $self->add_stat('Distribution', $self->get_conf('DISTRIBUTION'));
     $self->add_stat('Space', $self->get('This Space'));
     $self->add_stat('Build-Time',

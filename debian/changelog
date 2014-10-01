@@ -1,3 +1,9 @@
+sbuild (0.64.3-2) UNRELEASED; urgency=medium
+
+  * Ensure foreign-arch logging is correct (Closes: #763635)
+
+ -- Wookey <wookey@debian.org>  Wed, 01 Oct 2014 17:32:42 +0100
+
 sbuild (0.64.3-1) unstable; urgency=medium
 
   * Team upload

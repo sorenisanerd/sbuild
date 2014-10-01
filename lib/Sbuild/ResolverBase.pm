@@ -58,7 +58,7 @@ sub new {
     # Typically set by Sbuild::Build, but not outside a build context.
     $self->set('Host Arch', $self->get_conf('HOST_ARCH'));
     $self->set('Build Arch', $self->get_conf('BUILD_ARCH'));
-    $self->set('Initial Foreign Arches', $self->get_foreign_architectures());
+    $self->set('Initial Foreign Arches', {});
     $self->set('Added Foreign Arches', {});
 
     my $dummy_archive_list_file = $session->get('Location') .
@@ -94,8 +94,8 @@ sub setup {
 	print $F "APT::Install-Recommends false;\n";
 
 	if ($self->get('Host Arch') ne $self->get('Build Arch')) {
-	    print $F "APT::Architecture=".$self->get('Host Arch');
-	    $self->log("Adding APT::Architecture ".$self->get('Host Arch')." to the apt config");
+	    print $F 'APT::Architecture=' . $self->get('Host Arch');
+	    $self->log('Adding APT::Architecture ' . $self->get('Host Arch') . ' to the apt config');
 	}
 	if ($self->get('Split')) {
 	    print $F "Dir \"$chroot_dir\";\n";
@@ -161,8 +161,6 @@ sub get_foreign_architectures {
         return {};
     }
 
-    $self->log("Initial foreign arches: '@existing_foreign_arches'\n");
-
     my %set;
     foreach (@existing_foreign_arches) { $set{$_} = 1; }
     return \%set;
@@ -193,8 +191,9 @@ sub add_foreign_architecture {
         $self->log_error("Failed to set dpkg foreign-architecture config\n");
         return 0;
     }
+    debug("Added foreign arch: $arch\n") if $arch;
+
     $added_foreign_arches->{$arch} = 1;
-    $self->log("Adding dpkg foreign-architecture $arch\n");
     return 1;
 }
 
@@ -222,6 +221,9 @@ sub setup_dpkg {
     my $self = shift;
 
     my $session = $self->get('Session');
+
+    # Record initial foreign arch state so it can be restored
+    $self->set('Initial Foreign Arches', $self->get_foreign_architectures());
 
     if ($self->get('Host Arch') ne $self->get('Build Arch')) {
 	add_foreign_architecture($session, $self->get('Host Arch'))
@@ -738,8 +740,8 @@ sub setup_apt_archive {
 	  USER => 'root',
 	  DIR => '/' });
     if ($?) {
-	$self->log_error("E: Failed to set " . $self->get_conf('BUILD_USER') .
-			 ":sbuild ownership on $dummy_gpghome\n");
+	$self->log_error('E: Failed to set ' . $self->get_conf('BUILD_USER') .
+			 ':sbuild ownership on $dummy_gpghome\n');
 	return 0;
     }
     if (!(-d $dummy_archive_dir || mkdir $dummy_archive_dir, 0775)) {
