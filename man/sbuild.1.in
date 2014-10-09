@@ -530,6 +530,19 @@ These escapes are converted to the absolute path to a package's .dsc file.
 \fB%c\fR, \fB%SBUILD_CHANGES\fR
 These escapes are converted to the absolute path to a package's source .changes
 file.
+.TP
+\fB%r\fR, \fB%SBUILD_CHROOT_DIR\fR
+These escapes are converted to the absolute path on the host to the root
+directory of the chroot. This variable is not set if the external command is
+run inside the chroot.
+.TP
+\fB%b\fR, \fB%SBUILD_BUILD_DIR\fR
+These escapes are converted to the absolute path to the build directory inside
+the chroot.
+.TP
+\fB%p\fR, \fB%SBUILD_PKGBUILD_DIR\fR
+These escapes are converted to the absolute path to the package build directory
+inside the chroot.
 .PP
 Percent escapes are only substituted when an appropriate value is defined for
 them. At other times, it is left unchanged. For example, a .changes file is only

@@ -1150,11 +1150,20 @@ sub run_external_commands {
     my $dsc = $self->get('DSC');
     my $changes;
     $changes = $self->get('Changes File') if ($self->get('Changes File'));
+    my $build_dir = $self->get('Build Dir');
+    my $pkgbuild_dir = $build_dir . '/' . $self->get('DSC Dir');
     my %percent = (
 	"%" => "%",
 	"d" => $dsc, "SBUILD_DSC" => $dsc,
 	"c" => $changes, "SBUILD_CHANGES" => $changes,
+	"b" => $build_dir, "SBUILD_BUILD_DIR" => $build_dir,
+	"p" => $pkgbuild_dir, "SBUILD_PKGBUILD_DIR" => $pkgbuild_dir,
     );
+    if ($chroot == 0) {
+	my $chroot_dir = $self->get('Chroot Dir');
+	$percent{r} = $chroot_dir;
+	$percent{SBUILD_CHROOT_DIR} = $chroot_dir;
+    }
     # Our escapes pattern, with longer escapes first, then sorted lexically.
     my $keyword_pat = join("|",
 	sort {length $b <=> length $a || $a cmp $b} keys %percent);
