@@ -1,3 +1,25 @@
+sbuild (0.65.0-1) UNRELEASED; urgency=medium
+
+  [ Benjamin Drung ]
+  * Team upload.
+  * Fix various issues found by Lintian:
+    - Fix spelling mistake: indended -> intended
+    - Fix hyphen-used-as-minus-sign
+    - Fix debian-news-entry-uses-asterisk
+    - Fix copyright-refers-to-symlink-license
+    - Use canonical VCS fields
+  * Export additional variables to external commands: %SBUILD_CHROOT_DIR,
+    %SBUILD_BUILD_DIR, and %SBUILD_PKGBUILD_DIR (Closes: #756265)
+  * Bump Standard-Version to 3.9.6
+
+  [ Geoffrey Thomas ]
+  * Refactor temporary build-dep repository code to use apt-get update,
+    instead of hacking /var/lib/apt/lists.
+  * Add --extra-package (Closes: #700522) and --extra-repository (Closes:
+    #714883).
+
+ -- Benjamin Drung <benjamin.drung@profitbricks.com>  Thu, 09 Oct 2014 16:25:29 +0200
+
 sbuild (0.64.3-2) unstable; urgency=medium
 
   * Ensure foreign-arch logging is correct (Closes: #763635)
