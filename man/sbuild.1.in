@@ -525,7 +525,7 @@ commands given through the command line options.
 .SH LOCAL ARCHIVE
 The apt and aptitude resolvers create a local archive for installing build
 dependencies.  This is an internal implementation detail of the build
-dependency resolver, which is not user configurable, and is indended to be
+dependency resolver, which is not user configurable, and is intended to be
 entirely transparent to the user.  The local archive exists only transiently
 during the package build.  It does not persist across builds, and it is only
 used to store the dummy dependency packages created for a single build.
