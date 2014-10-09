@@ -11,12 +11,16 @@ sbuild (0.65.0-1) UNRELEASED; urgency=medium
   * Export additional variables to external commands: %SBUILD_CHROOT_DIR,
     %SBUILD_BUILD_DIR, and %SBUILD_PKGBUILD_DIR (Closes: #756265)
   * Bump Standard-Version to 3.9.6
+  * Unset typical desktop variables XDG_RUNTIME_DIR, XDG_SEAT,
+    XDG_SESSION_COOKIE, XDG_SESSION_ID, and XDG_VTNR (Closes: #729012)
 
   [ Geoffrey Thomas ]
   * Refactor temporary build-dep repository code to use apt-get update,
     instead of hacking /var/lib/apt/lists.
   * Add --extra-package (Closes: #700522) and --extra-repository (Closes:
     #714883).
+  * Accept 0 as a source version number (Closes: #712627)
+  * Add DEP-8 autopkgtest to build procenv. (Closes: #705926)
 
  -- Benjamin Drung <benjamin.drung@profitbricks.com>  Thu, 09 Oct 2014 16:25:29 +0200
 
