@@ -1124,7 +1124,7 @@ sub run_external_commands {
     # Create appropriate log message and determine if the commands are to be
     # run inside the chroot or not, and as root or not.
     my $chroot = 0;
-    my $rootuser = 1;  
+    my $rootuser = 1;
     if ($stage eq "pre-build-commands") {
 	$self->log_subsection("Pre Build Commands");
     } elsif ($stage eq "chroot-setup-commands") {
@@ -1170,15 +1170,15 @@ sub run_external_commands {
     my $returnval = 1;
     foreach my $command (@commands) {
 	foreach my $arg (@{$command}) {
-	  $arg =~ s{
-	      # Match a percent followed by a valid keyword
-	     \%($keyword_pat)
-	  }{
-	      # Substitute with the appropriate value only if it's defined
-	      $percent{$1} || $&
-	  }msxge;
+	    $arg =~ s{
+	        # Match a percent followed by a valid keyword
+	       \%($keyword_pat)
+	    }{
+	        # Substitute with the appropriate value only if it's defined
+	        $percent{$1} || $&
+	    }msxge;
 	}
-  my $command_str = join(" ", @{$command});
+	my $command_str = join(" ", @{$command});
 	$self->log_subsubsection("$command_str");
 	$returnval = $self->run_command($command, $log_output, $log_error, $chroot, $rootuser);
 	$self->log("\n");

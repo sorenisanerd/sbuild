@@ -66,8 +66,8 @@ sub run {
     }
 
     for my $queue_config (@{$self->get_conf('UPLOAD_QUEUES')}) {
-	$self->upload( 
-		$queue_config->get('DUPLOAD_LOCAL_QUEUE_DIR'), 
+	$self->upload(
+		$queue_config->get('DUPLOAD_LOCAL_QUEUE_DIR'),
 		$queue_config->get('DUPLOAD_ARCHIVE_NAME'));
     }
 

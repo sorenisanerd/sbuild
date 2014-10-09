@@ -285,7 +285,7 @@ sub process_mail () {
 
 	my $dist_config = $self->get_dist_config_by_name($dist_name);
 	return if (!$dist_config); #get_dist_config sets the error mail
-	
+
 	$self->get('Mail Body Text') =~ /^(\S+)/;
 	my $keyword = $1;
 	$self->log("Should-build reply for $package($dist_name)\n");
@@ -521,7 +521,7 @@ sub prepare_for_upload ($$) {
     foreach my $d (@to_dists) {
 	push( @wrong_dists, $d )
 	    if !$self->check_state(
-			$pkg, 
+			$pkg,
 			$self->get_dist_config_by_name($d),
 		   	qw(Building Built Install-Wait Reupload-Wait Build-Attempted));
     }
@@ -576,7 +576,7 @@ sub prepare_for_upload ($$) {
     my $pkg_noep = $pkg;
     $pkg_noep =~ s/_\d*:/_/;
     my $changes_name = $pkg_noep . "_" . $changes_filename_arch . ".changes";
-    
+
     for my $upload_dir (@upload_dirs) {
     if (! -d $upload_dir &&!mkdir( $upload_dir, 0750 )) {
 	$self->set('Mail Error',
@@ -1280,7 +1280,7 @@ sub find_upload_dirs_for_changes_file ($) {
     for my $dist_config (@{$self->get_conf('DISTRIBUTIONS')}) {
 	my $upload_dir = $self->get_conf('HOME') . '/' . $dist_config->get('DUPLOAD_LOCAL_QUEUE_DIR');
 	if (-f "$upload_dir/$changes_file_name") {
-	    $dirs{$upload_dir} = 1;	
+	    $dirs{$upload_dir} = 1;
 	}
     }
 

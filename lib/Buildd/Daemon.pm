@@ -355,9 +355,9 @@ sub do_wanna_build {
             my $pkg = (keys %$pkgv)[0];
             my $pkgd;
             foreach my $k (@{$pkgv->{$pkg}}) {
-                foreach my $l (keys %$k) { 
-                    $pkgd->{$l} = $k->{$l}; 
-                } 
+                foreach my $l (keys %$k) {
+                    $pkgd->{$l} = $k->{$l};
+                }
             };
             if ($pkgd->{'status'} ne 'ok') {
                 $self->log("Can't take $pkg: $pkgd->{'status'}\n");
@@ -387,7 +387,7 @@ sub do_wanna_build {
         return $ret;
     }
     my $pipe = $db->pipe_query(
-	'-v', 
+	'-v',
 	'--dist=' . $dist_config->get('DIST_NAME'),
        	$pkgver);
     if ($pipe) {
