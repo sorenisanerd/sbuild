@@ -7,6 +7,7 @@ Build-Depends: debhelper (>> 7.0.0), groff-base, perl-modules, libexception-clas
 Standards-Version: 3.9.6
 Vcs-Browser: https://anonscm.debian.org/cgit/buildd-tools/sbuild.git
 Vcs-Git: git://anonscm.debian.org/buildd-tools/sbuild
+XS-Testsuite: autopkgtest
 
 Package: libsbuild-perl
 Architecture: all

@@ -1,0 +1,5 @@
+Tests: build_procenv
+Depends: @, debootstrap, distro-info, lsb-release,
+  libnuma-dev [linux-i386 linux-amd64 linux-ia64 linux-mips linux-mipsel linux-powerpc linux-ppc64 linux-ppc64el linux-x32],
+  libcap-dev [linux-any], libselinux1-dev, libapparmor-dev
+Restrictions: needs-root

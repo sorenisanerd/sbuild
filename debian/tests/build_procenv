@@ -1,0 +1,204 @@
+#!/bin/sh
+#---------------------------------------------------------------------
+# DEP-8 test for sbuild.
+#
+# Creates a sbuild chroot, builds a package, installs the resulting
+# .deb, then runs the command provided by the .deb.
+#---------------------------------------------------------------------
+set -e
+
+die()
+{
+    msg="$*"
+    echo "ERROR: $msg" >&2
+    exit 1
+}
+
+# The package we'll ask sbuild to build (we know its buildable since
+# it's already in the archive :-)
+#
+# The advantage of choosing this particular package being that it runs
+# *itself* at the end of its build, which has the nice side-effect of
+# exposing the full sbuild environment to those perusing the autopkgtest
+# logs.
+pkg=procenv
+components=""
+
+distro=$(lsb_release -is|tr '[A-Z]' '[a-z]')
+[ -z "$distro" ] && die "cannot establish distribution"
+
+host_release=$(lsb_release -cs)
+[ -z "$host_release" ] && die "cannot establish release running on host"
+
+if [ "$distro" = ubuntu ]
+then
+    # Build chroot for latest release.
+    release=$(distro-info --devel)
+    components=main,universe
+
+    case $(dpkg --print-architecture) in
+        amd64|i386)
+            url=http://archive.ubuntu.com/ubuntu
+            ;;
+        *)
+            url=http://ports.ubuntu.com/ubuntu-ports
+            ;;
+    esac
+elif [ "$distro" = debian ]
+then
+    # Build chroot for latest stable release since
+    # sid may not be buildable on a particular day.
+    release=$(distro-info --stable)
+
+    url=http://archive.debian.org/debian
+else
+    die "need to know where archive is for distro '$distro'"
+fi
+
+arch=$(dpkg --print-architecture 2>/dev/null)
+[ -z "$arch" ] && die "cannot establish architecture"
+
+[ -z "$ADTTMP" ] && die "ADTTMP not set"
+dir="$ADTTMP/schroot-$release"
+
+# The expected name of the schroot that sbuild-createchroot will create
+chroot="${release}-${arch}-sbuild"
+
+# schroot does not allow a chroot name to be specified at creation time.
+# As such, we must take care to avoid stomping on a developers chroots.
+# If we find any that match the chroot we're about to try and make, exit
+# with a message.
+#
+# Note that we are very cautious in the grep check below; we purposely
+# don't match on the _type_ of schroot in case new schroot types are
+# added and this test is not updated to take account of the new types.
+
+schroots=$(schroot -l 2>/dev/null)
+
+if [ -n "$schroots" ] && echo "$schroots"|grep -q ":${release}-${arch}"
+then
+    echo "INFO:"
+    echo "INFO: Existing schroots detected for current release ($release)"
+    echo "INFO: and architecture ($arch)"
+    echo "INFO:"
+    echo "INFO: Not continuing."
+    echo "INFO:"
+
+    # exit successfully
+    exit 0
+fi
+
+if [ -z "$http_proxy" ]; then
+    RES=`apt-config shell http_proxy Acquire::http::Proxy`
+    eval $RES
+    export http_proxy
+    echo "INFO: using proxy: ${http_proxy:-(none)}"
+fi
+
+# Use '--download-only' to avoid unpack which generates a
+# signature warning to stderr, causing this test to fail.
+# Take care to download the package version for the release we will
+# create the chroot for.
+echo "INFO: Downloading source for package '$pkg' from release '$release'"
+apt-get source --download-only "$pkg/$release"
+
+dsc=$(ls ${pkg}*.dsc)
+
+echo "INFO: Creating sbuild chroot '$chroot' for release '$release' in directory '$dir' from url '$url'"
+[ -n "$components" ] && components="--components=$components"
+# avoid "debconf: delaying package configuration, since apt-utils is not installed"
+sbuild-createchroot --include=apt-utils $components "$release" "$dir" "$url"
+if [ -n "$http_proxy" ]; then
+    echo "Acquire::http { Proxy \"$http_proxy\"; };" > $dir/etc/apt/apt.conf.d/01proxy
+fi
+
+echo "INFO: Checking chroot '$chroot' is known"
+schroot --list --all-chroots|grep "^chroot:${chroot}$"
+
+echo "INFO: Displaying information about chroot '$chroot'"
+schroot --info "${chroot}"
+
+keydir=/var/lib/sbuild/apt-keys
+
+# Install pre-generated signing keys specifically to handle systems with
+# insufficient entropy to run 'sbuild-update --keygen' on.
+echo "INFO: Installing sbuild key pair (to avoid need for local entropy)"
+[ -d "$keydir" ] || die "key directory '$keydir' does not exist"
+
+srcdir="debian/tests"
+key="$srcdir/sbuild-key.pub"
+echo "INFO: Copying key '$key' to '$keydir'"
+install -o sbuild -g sbuild -m 0664 "$key" "$keydir"
+
+key="$srcdir/sbuild-key.sec"
+echo "INFO: Copying key '$key' to '$keydir'"
+install -o sbuild -g sbuild -m 0640 "$key" "$keydir"
+
+echo "INFO: Building package '$pkg' for release '$release' from '$dsc'"
+sbuild -A -d "$release" $dsc 2>&1
+
+pkg_and_version=$(echo "$dsc"|sed 's/\.dsc$//g')
+deb=${pkg_and_version}_${arch}.deb
+
+echo "INFO: Displaying sbuild log"
+cat ${pkg_and_version}_${arch}*.build
+
+# Do what we can to check if the .deb looks usable (since we may not
+# be able to install it to test it properly)
+echo "INFO: Listing information on '$deb'"
+dpkg --info "$deb"
+
+echo "INFO: Listing contents of '$deb'"
+dpkg --contents "$deb"
+
+extract="$ADTTMP/extract"
+echo "INFO: Extracting '$deb' to '$extract'"
+dpkg --extract "$deb" "$extract"
+
+if [ "$release" = "$host_release" ]
+then
+    echo "INFO: Installing package '$pkg' from '$deb'"
+    dpkg -i "$deb"
+
+    # run the command to prove the build worked but also to expose the
+    # auto-package-test environment used for this test.
+    cmd=$pkg
+    echo "INFO: Showing AutoPkgTest environment by running '$cmd' from package '$pkg'"
+    "$cmd"
+else
+    echo "INFO: Not installing package '$pkg' as host release ('$host_release')"
+    echo "INFO: differs to release package is built for ('$release')"
+fi
+
+# There is no sbuild/schroot command to actually delete the chroot, but
+# we do want to clean up fully. The best we can do is end the schroot
+# session, and remove the sym links. Removing the chroot itself is not
+# necessary since it is created below $ADTTMP so will be removed
+# automatically by the AutoPkgTest environment.
+
+echo "INFO: Establishing schroot sessions for chroot '$chroot'"
+session=$(schroot --list --all-sessions|grep "^session:${release}-${arch}-" || :)
+if [ -n "$session" ]
+then
+    count=$(echo "$session"|wc -l)
+    [ $count -eq 1 ] || die "expected 1 session, found $count"
+
+    echo "INFO: Ending schroot session '$session'"
+    schroot --end-session --chroot "$session"
+else
+    echo "INFO: No schroot session to end"
+fi
+
+echo "INFO: Cleaning up"
+
+echo "INFO: Removing sbuild chroot symbolic link for '$chroot'"
+link=$(ls /etc/sbuild/chroot/${chroot})
+# remove soon-to-be-broken symbolic link
+[ -h "$link" ] && rm "$link"
+
+# remove soon-to-be stale configuration file
+echo "INFO: Removing schroot configuration file for '$chroot'"
+config=$(ls /etc/schroot/chroot.d/${chroot}-*)
+[ -f "$config" ] && rm "$config"
+
+echo "INFO: SUCCESS"
