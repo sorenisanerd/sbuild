@@ -79,6 +79,7 @@ sub unset_env () {
     delete $ENV{'TERM'};
     delete $ENV{'XDG_RUNTIME_DIR'};
     delete $ENV{'XDG_SEAT'};
+    delete $ENV{'XDG_SESSION_COOKIE'};
     delete $ENV{'XDG_SESSION_ID'};
     delete $ENV{'XDG_VTNR'};
 }
