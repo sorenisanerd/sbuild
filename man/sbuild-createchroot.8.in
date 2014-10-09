@@ -91,7 +91,7 @@ Set the target architecture.  This may be used if dpkg is not already
 installed.  See also \fI\-\-foreign\fP, below.
 .TP
 .BR \-\-chroot-suffix=\fIsuffix\fP
-Add a custom suffix to the chroot name. Defaults to '-schroot'.
+Add a custom suffix to the chroot name. Defaults to '\-schroot'.
 .TP
 .BR \-\-foreign
 Only perform the initial unpack phase of bootstrapping.  This is required if

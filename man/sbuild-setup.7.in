@@ -168,13 +168,13 @@ or
 .SS 6. Set up packages for sbuild
 While running as root inside the chroot:
 .PP
-\f[CR]# \f[CB]apt-get update\fP\fP
+\f[CR]# \f[CB]apt\-get update\fP\fP
 .br
-\f[CR]# \f[CB]apt-get dist-upgrade\fP\fP
+\f[CR]# \f[CB]apt\-get dist\-upgrade\fP\fP
 .br
-\f[CR]# \f[CB]apt-get install debconf\fP\fP
+\f[CR]# \f[CB]apt\-get install debconf\fP\fP
 .br
-\f[CR]# \f[CB]dpkg-reconfigure -plow debconf\fP\fP
+\f[CR]# \f[CB]dpkg\-reconfigure \-plow debconf\fP\fP
 .br
 .PP
 Answer the debconf questions as follows:

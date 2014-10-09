@@ -61,7 +61,7 @@ sbuild \- build debian packages from source
 .RB [ \-\-lintian\-opt=\fIoptions\fP ]
 .RB [ \-\-lintian\-opts=\fIoptions\fP ]
 .RB [ \-\-run\-piuparts ]
-.RB [ \-\-no-run\-piuparts ]
+.RB [ \-\-no\-run\-piuparts ]
 .RB [ \-\-piuparts\-opt=\fIoptions\fP ]
 .RB [ \-\-piuparts\-opts=\fIoptions\fP ]
 .RB [ \-\-piuparts\-root\-arg=\fIoptions\fP ]
@@ -172,7 +172,7 @@ Also build Architecture: all packages, i.e. use dpkg\-buildpackage \-b
 instead of \-B.
 .TP
 .BR "\-\-no\-arch\-all"
-Do not build Architecture: all packages, i.e. use dpkg\-buildpackage -B
+Do not build Architecture: all packages, i.e. use dpkg\-buildpackage \-B
 instead of \-b. This option is the opposite of \-\-arch\-all.
 .TP
 .BR \-b ", " "\-\-batch"
@@ -317,9 +317,9 @@ The version number of the binary NMU.  This should be used in conjunction with
 used for binary NMUs.
 .TP
 .BR "\-\-append\-to\-version=\fIstring\fP"
-This option is similar to --make-binNMU except that it allows the user to
+This option is similar to \-\-make\-binNMU except that it allows the user to
 specify an arbitrary string to be appended to the version number (immediately
-before the '+' in the Debian revision if --make-binNMU is also provided).
+before the '+' in the Debian revision if \-\-make\-binNMU is also provided).
 .TP
 .BR \-\-run\-lintian
 Run lintian after a successful build.

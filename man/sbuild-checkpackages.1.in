@@ -56,12 +56,12 @@ and \[oq]experimental\[cq], respectively.
 .SH EXAMPLES
 To set the reference file in the \fIunstable\fP chroot:
 .PP
-\f[CR]% \f[CB]sbuild\-checkpackages unstable --set\fP\fP
+\f[CR]% \f[CB]sbuild\-checkpackages unstable \-\-set\fP\fP
 .br
 .PP
 To show the differences in the \fIunstable\fP chroot:
 .PP
-\f[CR]% \f[CB]sbuild\-checkpackages unstable --list\fP\fP
+\f[CR]% \f[CB]sbuild\-checkpackages unstable \-\-list\fP\fP
 .br
 .SH AUTHORS
 .nf
