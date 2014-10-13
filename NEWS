@@ -1,11 +1,24 @@
 NEWS                                                            -*- outline -*-
 ----
 
-Welcome to sbuild 0.64.3.  Please read these release notes carefully.
+Welcome to sbuild 0.65.0.  Please read these release notes carefully.
 
 Full installation instructions are provided in the INSTALL file.  The
 README file also contains more specific notes regarding building and
 configuration.
+
+* Major changes in 0.65.0
+
+  1) Add support for build profiles. The specified profile is used 
+      in the build if -P or --profiles is passed or the 
+      DEB_BUILD_PROFILES environment variable is set.
+
+  2) An Extra build-time repository and/or individual packages can be 
+      made available during the build. See the --extra-repository and 
+      --extra-package options.
+
+  3) External commands have Chroot dir, Build dir and pkgbuild 
+      dir available as ENV vars.
 
 * Major changes in 0.64.3:
 
