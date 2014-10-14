@@ -2,8 +2,18 @@ Source: sbuild
 Section: devel
 Priority: extra
 Maintainer: Debian buildd-tools Developers <buildd-tools-devel@lists.alioth.debian.org>
-Uploaders: Michael Banck <mbanck@debian.org>, Roger Leigh <rleigh@debian.org>, Francesco Paolo Lovergine <frankie@debian.org>, Wookey <wookey@debian.org>
-Build-Depends: debhelper (>> 7.0.0), groff-base, perl-modules, libexception-class-perl, libfilesys-df-perl, libio-zlib-perl, libmime-lite-perl,  libdpkg-perl (>= 1.17.2)
+Uploaders: Michael Banck <mbanck@debian.org>,
+           Roger Leigh <rleigh@debian.org>,
+           Francesco Paolo Lovergine <frankie@debian.org>,
+           Wookey <wookey@debian.org>
+Build-Depends: debhelper (>> 7.0.0),
+               groff-base,
+               libdpkg-perl (>= 1.17.2),
+               libexception-class-perl,
+               libfilesys-df-perl,
+               libio-zlib-perl,
+               libmime-lite-perl,
+               perl-modules
 Standards-Version: 3.9.6
 Vcs-Browser: https://anonscm.debian.org/cgit/buildd-tools/sbuild.git
 Vcs-Git: git://anonscm.debian.org/buildd-tools/sbuild
@@ -12,7 +22,22 @@ XS-Testsuite: autopkgtest
 Package: libsbuild-perl
 Architecture: all
 Section: perl
-Depends: ${misc:Depends}, ${perl:Depends}, perl-modules, libexception-class-perl, libfilesys-df-perl, libio-zlib-perl, libmime-lite-perl, adduser, apt, apt-utils, exim4 | mail-transport-agent, dpkg-dev, devscripts (>= 2.10.26), dctrl-tools, schroot (>= 1.4.22), libdpkg-perl (>= 1.15.5)
+Depends: adduser,
+         apt,
+         apt-utils,
+         dctrl-tools,
+         devscripts (>= 2.10.26),
+         dpkg-dev,
+         exim4 | mail-transport-agent,
+         libdpkg-perl (>= 1.15.5),
+         libexception-class-perl,
+         libfilesys-df-perl,
+         libio-zlib-perl,
+         libmime-lite-perl,
+         perl-modules,
+         schroot (>= 1.4.22),
+         ${misc:Depends},
+         ${perl:Depends}
 Replaces: sbuild (<= 0.58.4-1)
 Description: Tool for building Debian binary packages from Debian sources
  The sbuild suite of programs (wanna-build, buildd and sbuild) are
@@ -26,9 +51,15 @@ Description: Tool for building Debian binary packages from Debian sources
 
 Package: sbuild
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}, perl-modules, libsbuild-perl (= ${source:Version}), adduser, apt-utils
-Recommends: fakeroot, debootstrap
-Suggests: wget, deborphan
+Depends: adduser,
+         apt-utils,
+         libsbuild-perl (= ${source:Version}),
+         perl-modules,
+         ${misc:Depends},
+         ${perl:Depends},
+         ${shlibs:Depends}
+Recommends: debootstrap, fakeroot
+Suggests: deborphan, wget
 Description: Tool for building Debian binary packages from Debian sources
  The sbuild suite of programs (buildd and sbuild) are used to build
  binary packages from source packages.  sbuild does the actual package
@@ -47,7 +78,16 @@ Description: Tool for building Debian binary packages from Debian sources
 
 Package: buildd
 Architecture: all
-Depends: ${misc:Depends}, ${perl:Depends}, libsbuild-perl, adduser, sbuild (>= ${source:Version}), sbuild (<< ${source:Version}.1~), dupload, cron, exim4 | mail-transport-agent, libyaml-tiny-perl
+Depends: adduser,
+         cron,
+         dupload,
+         exim4 | mail-transport-agent,
+         libsbuild-perl,
+         libyaml-tiny-perl,
+         sbuild (<< ${source:Version}.1~),
+         sbuild (>= ${source:Version}),
+         ${misc:Depends},
+         ${perl:Depends}
 Suggests: wanna-build
 Replaces: sbuild, ubuntu-dev-tools (<= 0.83)
 Breaks: ubuntu-dev-tools (<= 0.83)
