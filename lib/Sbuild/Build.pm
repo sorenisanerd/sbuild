@@ -1774,7 +1774,7 @@ sub build {
 	    }
 	    else {
 		$self->log($_) while( <PIPE> );
-		close( PIPE );
+		close( PIPE ) or ($rv = 1);
 	    }
 	    $self->log("\n");
 	    if (!open( PIPE, "dpkg --contents $deb 2>&1 | sort -k6 |" )) {
@@ -1782,7 +1782,7 @@ sub build {
 	    }
 	    else {
 		$self->log($_) while( <PIPE> );
-		close( PIPE );
+		close( PIPE ) or ($rv = 1);
 	    }
 	    $self->log("\n");
 	}
