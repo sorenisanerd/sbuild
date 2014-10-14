@@ -199,7 +199,7 @@ sub set_version {
 
     # Version with binNMU or other additions and stripped epoch
     my $sversion = $b_version;
-    $sversion .= '-' . $b_revision if $b_revision;
+    $sversion .= '-' . $b_revision if $b_revision ne '';
 
     $self->set('Package', $pkg);
     $self->set('Version', $version);
