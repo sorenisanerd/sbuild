@@ -13,6 +13,10 @@ sbuild (0.65.0-1) UNRELEASED; urgency=medium
   * Bump Standard-Version to 3.9.6
   * Unset typical desktop variables XDG_RUNTIME_DIR, XDG_SEAT,
     XDG_SESSION_COOKIE, XDG_SESSION_ID, and XDG_VTNR (Closes: #729012)
+  * Fail if dpkg subcommands fail instead of silently ignoring failures.
+    Thanks to Christoph Biedl for the patch (Closes: #745221)
+  * Fix build failure if the package version ends with Debian revision 0.
+    Thanks to Adam Borowski <kilobyte@angband.pl> (Closes: #679574)
 
   [ Geoffrey Thomas ]
   * Refactor temporary build-dep repository code to use apt-get update,
@@ -26,7 +30,16 @@ sbuild (0.65.0-1) UNRELEASED; urgency=medium
   * sbuild:
     - Add build-profiles support (Closes: 731798)
 
+  [ Geoffrey Thomas ]
+  * Sbuild::ChrootSetup: Pass --no-options to gpg (Closes: #722103)
+
  -- Benjamin Drung <benjamin.drung@profitbricks.com>  Thu, 09 Oct 2014 16:25:29 +0200
+
+sbuild (0.64.3-2) unstable; urgency=medium
+
+  * Ensure foreign-arch logging is correct (Closes: #763635)
+
+ -- Wookey <wookey@debian.org>  Wed, 01 Oct 2014 17:32:42 +0100
 
 sbuild (0.64.3-1) unstable; urgency=medium
 
