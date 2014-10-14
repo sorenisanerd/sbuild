@@ -144,8 +144,8 @@ do_debootstrap() {
     echo "I: Creating a policy-rc.d to prevent daemon startups..."
     TEMPFILE="$(mktemp)"
     cat > "${TEMPFILE}" <<EOT
-#!/bin/sh                                                                                                                                                      
-echo "All runlevel operations denied by policy" >&2                                                                                                            
+#!/bin/sh
+echo "All runlevel operations denied by policy" >&2
 exit 101
 EOT
     sudo mv "${TEMPFILE}" "${TARGET}/usr/sbin/policy-rc.d"
@@ -201,7 +201,7 @@ EOT
 
 setup_schroot_variant() {
     echo VARIANT: $EXTRA
-    if ! [ -f "/etc/schroot/chroot.d/buildd-${IDENTIFIER}${EXTRA}-${ARCH}" ] && 
+    if ! [ -f "/etc/schroot/chroot.d/buildd-${IDENTIFIER}${EXTRA}-${ARCH}" ] &&
        ! schroot -l | grep ^${IDENTIFIER}${EXTRA}-${ARCH}-sbuild$ -q &&
        ! schroot -l | grep ^${SUITEEXTRA}-${ARCH}-sbuild$ -q ; then
         setup_schroot
@@ -225,7 +225,7 @@ deb-src http://ftp.skolelinux.no/skolelinux/ ${BASE}-test local
 EOT
     fi
 
-    if [ "$VARIANT" = "backports" ]; then     
+    if [ "$VARIANT" = "backports" ]; then
         echo "I: Adding backports entries to sources.list..."
         cat >> "${TEMPFILE}" <<EOT
 deb http://backports-master.debian.org/buildd/ ${BASE}-backports main contrib non-free
@@ -233,7 +233,7 @@ deb-src http://backports-master.debian.org/buildd/ ${BASE}-backports main contri
 EOT
     fi
 
-    if [ "$VARIANT" = "volatile" ]; then     
+    if [ "$VARIANT" = "volatile" ]; then
         echo "I: Adding volatile entries to sources.list..."
         cat >> "${TEMPFILE}" <<EOT
 deb     http://volatile.debian.net/debian-volatile      ${BASE}-proposed-updates/volatile main contrib non-free
@@ -250,7 +250,7 @@ deb-src http://incoming.debian.org/debian ${BASE}-proposed-updates main contrib
 EOT
 	fi
 
-    if [ "$BASE" = "sid" ] && [ -z "${VGNAME}" ] ; then     
+    if [ "$BASE" = "sid" ] && [ -z "${VGNAME}" ] ; then
         # in case of lvm-chroots, we add the entries on the fly
         echo "I: Adding unstable incoming entries to sources.list..."
         cat >> "${TEMPFILE}" <<EOT
@@ -261,7 +261,7 @@ deb-src http://incoming.debian.org/buildd-unstable /
 EOT
     fi
 
-    if [ "$VARIANT" = "experimental" ]; then     
+    if [ "$VARIANT" = "experimental" ]; then
         echo "I: Adding experimental entries to sources.list..."
         cat >> "${TEMPFILE}" <<EOT
 deb ${MIRROR} experimental main contrib
@@ -285,7 +285,7 @@ EOT
     sudo mv "${TEMPFILE}" "${TARGET}/etc/apt/sources.list"
     sudo chown root: "${TARGET}/etc/apt/sources.list"
     sudo chmod 0644 "${TARGET}/etc/apt/sources.list"
-    
+
     echo "I: Telling apt to not pull in recommends..."
     TEMPFILE="$(mktemp)"
     cat > "${TEMPFILE}" <<EOT

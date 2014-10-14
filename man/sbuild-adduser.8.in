@@ -25,7 +25,7 @@ sbuild\-adduser \- add an sbuild user
 \fBsbuild\-adduser\fR adds the specified users to the \fIsbuild\fP group,
 granting them the privelege to build packages with
 .BR sbuild (1).
-The 
+The
 .BR schroot (1)
 configuration must permit the user to obtain root permissions in the chroot via
 the \f[CI]root\-users\fP and \f[CI]root\-groups\fP options in

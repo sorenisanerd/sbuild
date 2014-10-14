@@ -46,7 +46,7 @@ $ dpkg-reconfigure -plow debconf
   What interface should be used for configuring packages? [1] 5
     1. critical  2. high  3. medium  4. low
   Ignore questions with a priority less than.. [3] 1
-  Show all old questions again and again? [no] 
+  Show all old questions again and again? [no]
 
 md5sum mismatch when building a source package (sbuild --source):
   - the original tarball has to be in the work directory -

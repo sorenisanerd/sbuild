@@ -186,7 +186,7 @@ buildd-watcher performs some regular maintenance tasks:
    Additionally daemon.log is renamed to daemon.log.old, and SIGHUP is
    sent to buildd to open the new log file. If a daemon.log.old already
    exists, it's compressed and moved to old-logs/daemon-<DATE>.log.gz.
-   
+
    There are several config vars that control long to keep the various
    log files until they're archived: $pkg_log_keep, $build_log_keep,
    $daemon_log_rotate, and $daemon_log_keep. All are measured in days.

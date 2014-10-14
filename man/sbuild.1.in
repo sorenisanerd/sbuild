@@ -372,11 +372,11 @@ Run these commands when a chroot is setup, before dependencies are installed. Th
 option can be used multiple times to add multiple commands.
 .TP
 .BR \-\-starting\-build\-commands=\fIstring\fP
-Run these commands after dependencies are installed, just before the package 
+Run these commands after dependencies are installed, just before the package
 build starts. This option can be used multiple times to add multiple commands.
 .TP
 .BR \-\-finished\-build\-commands=\fIstring\fP
-Run these commands immediately after the timed package build finishes. 
+Run these commands immediately after the timed package build finishes.
 This option can be used multiple times to add multiple commands.
 .TP
 .BR \-\-chroot\-cleanup\-commands=\fIstring\fP
@@ -452,10 +452,10 @@ through the use of the configuration files. In the configuration file, the list
 of commands to run are placed in a hash of arrays of arrays of strings
 corresponding to the commands to run.
 .PP
-There are three sets of commands. The \fIpre/post\-build\-\fP commands are run 
+There are three sets of commands. The \fIpre/post\-build\-\fP commands are run
 external to the chroot. The \fIchroot\-setup/cleanup\-\fP commands and
 \fIStarting/Finished\-Build\-\fP commands are run inside the chroot. They are all
-run as root except the \fIStarting/Finishing\-build-\fP commands, which are run 
+run as root except the \fIStarting/Finishing\-build-\fP commands, which are run
 as the current sbuild user.
 .PP
 Here is a summary of the ordering, user, internal/external to chroot for each command hook

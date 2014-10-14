@@ -918,14 +918,14 @@ sbuild (0.60.0-1) unstable; urgency=low
 sbuild (0.59.0-1) unstable; urgency=low
 
   [ Roger Leigh ]
-  * New release. 
+  * New release.
   * Use version comparison functions in WannaBuild::Database
-    (Closes: #521486).  Thanks to Florian Weimer. 
+    (Closes: #521486).  Thanks to Florian Weimer.
   * WannaBuild::Database: Allow whitespace in Architecture field
-    (Closes: #535415).  Thanks to John Wright for this patch. 
+    (Closes: #535415).  Thanks to John Wright for this patch.
   * Sbuild::Build, WannaBuild::Database: Add support for architecture
     aliases/wildcards (Closes: #501230).  Thanks to Andres Mejia for
-    these patches. 
+    these patches.
   * Sbuild::Conf doesn't require STATS_DIR to exist, and
     Sbuild::Build::write_stats only uses STATS_DIR in batch mode
     (Closes: #539570).
@@ -962,7 +962,7 @@ sbuild (0.58.5-1) unstable; urgency=low
 sbuild (0.58.4-1) unstable; urgency=low
 
   [ Roger Leigh ]
-  * New release. 
+  * New release.
   * sbuild:
     - A $purge_build_deps configuration option, and --purge-deps
       command-line option have been added to control build-dependency
@@ -1025,10 +1025,10 @@ sbuild (0.58.2-1) unstable; urgency=low
     (Closes: #520755).  This was preventing the detection of chroots
     in some locales.
   * debian/buildd.cron.d: Move example crontab here, with entries
-    commented out for now. 
+    commented out for now.
   * debian/rules: Use dh_installcrontab to install crontabs.
   * Remove buildd package for this release, because it's not yet
-    ready for use. 
+    ready for use.
 
  -- Roger Leigh <rleigh@debian.org>  Sat, 11 Apr 2009 10:20:25 +0100
 
@@ -2215,9 +2215,9 @@ sbuild (0.32) unstable; urgency=low
 sbuild (0.31) unstable; urgency=low
 
   * Patch for #239339 revised:
-  	Escaping to manage correctly possible nested RE. 
+        Escaping to manage correctly possible nested RE.
         (closes: #268712)
-  	Doing removes only in chroot environment.
+        Doing removes only in chroot environment.
         (closes: #264834).
   * Changed a bit man page to clarify better synopsis.
     (closes: #265998)

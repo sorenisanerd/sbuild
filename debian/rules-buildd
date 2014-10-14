@@ -52,7 +52,7 @@ binary-buildd: checkroot build
 
 	install -d debian/tmp/usr/share/man/man1/
 	install -m 644 buildd.1 buildd-mail-wrapper.1 buildd-uploader.1 \
-		debian/tmp/usr/share/man/man1	
+		debian/tmp/usr/share/man/man1
 	gzip -9v debian/tmp/usr/share/man/man1/*
 
 	install -d debian/tmp/usr/share/doc/buildd/examples
@@ -79,7 +79,7 @@ binary-wanna-build: checkroot
 	install -d debian/tmp/usr/bin/wb-short
 	install -m 755 wanna-build wanna-build-mail wanna-build-mail.pl \
 		wanna-build-statistics check-old-builds do-merge-packages \
-		do-merge-quinn debian/tmp/usr/bin 
+		do-merge-quinn debian/tmp/usr/bin
 	$(STRIP) debian/tmp/usr/bin/wanna-build-mail
 	install -m 755 wanna-build-catdb debian/tmp/usr/bin/wanna-build-catdb
 	ln -s wanna-build-catdb debian/tmp/usr/bin/wanna-build-catgdbm
