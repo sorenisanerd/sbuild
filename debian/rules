@@ -69,12 +69,13 @@ binary-indep: build install-indep
 	dh_perl -i
 	dh_link -i
 	dh_compress -i
-	mv debian/buildd/usr/share/man/man1/buildd-abort.1 \
-	  debian/buildd/usr/share/man/man1/buildd-abort.1.gz
-	mv debian/buildd/usr/share/man/man8/buildd-make-chroot.8 \
-	  debian/buildd/usr/share/man/man8/buildd-make-chroot.8.gz
-	mv debian/buildd/usr/share/man/man1/buildd-update-chroots.1 \
-	  debian/buildd/usr/share/man/man1/buildd-update-chroots.1.gz
+	# Correct (now compressed) man page symlinks
+	rm debian/buildd/usr/share/man/man1/buildd-abort.1
+	ln -s sbuild-abort.1.gz debian/buildd/usr/share/man/man1/buildd-abort.1.gz
+	rm debian/buildd/usr/share/man/man8/buildd-make-chroot.8
+	ln -s sbuild-createchroot.8.gz debian/buildd/usr/share/man/man8/buildd-make-chroot.8.gz
+	rm debian/buildd/usr/share/man/man1/buildd-update-chroots.1
+	ln -s sbuild-update.1.gz debian/buildd/usr/share/man/man1/buildd-update-chroots.1.gz
 	dh_fixperms -i
 	dh_installdeb -i
 	dh_gencontrol -i
