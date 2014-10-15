@@ -9,7 +9,7 @@ sbuild (0.65.0-1) UNRELEASED; urgency=medium
     - Fix copyright-refers-to-symlink-license
     - Use canonical VCS fields
   * Export additional variables to external commands: %SBUILD_CHROOT_DIR,
-    %SBUILD_BUILD_DIR, and %SBUILD_PKGBUILD_DIR (Closes: #756265)
+    %SBUILD_BUILD_DIR, %SBUILD_PKGBUILD_DIR and %SBUILD_HOST_ARCH (Closes: #756265)
   * Bump Standard-Version to 3.9.6
   * Unset typical desktop variables XDG_RUNTIME_DIR, XDG_SEAT,
     XDG_SESSION_COOKIE, XDG_SESSION_ID, and XDG_VTNR (Closes: #729012)

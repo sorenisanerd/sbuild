@@ -537,6 +537,10 @@ These escapes are converted to the absolute path to a package's .dsc file.
 These escapes are converted to the absolute path to a package's source .changes
 file.
 .TP
+\fB%a\fR, \fB%SBUILD_HOST_ARCH\fR
+These escapes are converted to the debian name of the architecture the build 
+is being built for (e.g amd64, armhf).
+.TP
 \fB%r\fR, \fB%SBUILD_CHROOT_DIR\fR
 These escapes are converted to the absolute path on the host to the root
 directory of the chroot. This variable is not set if the external command is

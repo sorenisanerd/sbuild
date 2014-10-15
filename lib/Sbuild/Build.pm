@@ -1150,14 +1150,15 @@ sub run_external_commands {
     # Run each command, substituting the various percent escapes (like
     # %SBUILD_DSC) from the commands to run with the appropriate subsitutions.
     my $dsc = $self->get('DSC');
-    my $changes;
-    $changes = $self->get('Changes File') if ($self->get('Changes File'));
+    my $changes = $self->get('Changes File') if ($self->get('Changes File'));
+    my $hostarch = $self->get('Host Arch') if ($self->get('Host Arch'));
     my $build_dir = $self->get('Build Dir');
     my $pkgbuild_dir = $build_dir . '/' . $self->get('DSC Dir');
     my %percent = (
 	"%" => "%",
 	"d" => $dsc, "SBUILD_DSC" => $dsc,
 	"c" => $changes, "SBUILD_CHANGES" => $changes,
+	"a" => $hostarch, "SBUILD_HOST_ARCH" => $hostarch,
 	"b" => $build_dir, "SBUILD_BUILD_DIR" => $build_dir,
 	"p" => $pkgbuild_dir, "SBUILD_PKGBUILD_DIR" => $pkgbuild_dir,
     );
