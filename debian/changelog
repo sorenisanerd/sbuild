@@ -18,6 +18,7 @@ sbuild (0.65.0-1) UNRELEASED; urgency=medium
     Thanks to Christoph Biedl for the patch (Closes: #745221)
   * Fix build failure if the package version ends with Debian revision 0.
     Thanks to Adam Borowski <kilobyte@angband.pl> (Closes: #679574)
+  * Fix broken man page symlinks in buildd package
 
   [ Geoffrey Thomas ]
   * Refactor temporary build-dep repository code to use apt-get update,
