@@ -59,6 +59,7 @@ sub new {
     $self->set('Host Arch', $self->get_conf('HOST_ARCH'));
     $self->set('Build Arch', $self->get_conf('BUILD_ARCH'));
     $self->set('Build Profiles', $self->get_conf('BUILD_PROFILES'));
+    $self->set('Multiarch Support', 1);
     $self->set('Initial Foreign Arches', {});
     $self->set('Added Foreign Arches', {});
 
@@ -143,9 +144,33 @@ sub get_foreign_architectures {
     my $session = $self->get('Session');
 
     my ($tmpfh, $tmpfilename) = tempfile(DIR => $session->get('Location') . "/tmp");
+    my ($tmpfh2, $tmpfilename2) = tempfile(DIR => $session->get('Location') . "/tmp");
+
     $session->run_command({ COMMAND => ['dpkg', '--print-foreign-architectures'],
                             USER => 'root',
-                            STREAMOUT => $tmpfh});
+                            STREAMOUT => $tmpfh,
+                            STREAMERR => $tmpfh2});
+    if ($?)
+    {
+        seek $tmpfh2, 0, SEEK_SET;
+        while(<$tmpfh2>)
+        {
+            chomp;
+            next unless $_;
+	    # if 'unknown option' in stderr then dpkg predates multiarch
+            if (m/unknown option/s) 
+	    {
+                $self->set('Multiarch Support', 0);
+	    }
+        }
+        close $tmpfh2;
+        # quietly return nothing if dpkg is too old (for use on older chroots)
+        if ($self->get('Multiarch Support')) 
+        {
+            $self->log_error("Failed to get dpkg foreign-architecture config\n");
+        }
+        return {};
+    } # else dpkg has multiarch support
     seek $tmpfh, 0, SEEK_SET;
     my @existing_foreign_arches;
     while(<$tmpfh>)
@@ -155,13 +180,6 @@ sub get_foreign_architectures {
         push @existing_foreign_arches, $_;
     }
     close $tmpfh;
-
-    if ($?)
-    {
-        $self->log_error("Failed to get dpkg foreign-architecture config\n");
-        return {};
-    }
-
     my %set;
     foreach (@existing_foreign_arches) { $set{$_} = 1; }
     return \%set;
@@ -171,6 +189,9 @@ sub add_foreign_architecture {
 
     my $self = shift;
     my $arch = shift;
+
+    # just skip if dpkg is to old for multiarch
+    if (! $self->get('Multiarch Support')) { return 1 };
 
     # if we already have this architecture, we're done
     my $initial_foreign_arches = $self->get('Initial Foreign Arches');
@@ -200,6 +221,9 @@ sub add_foreign_architecture {
 
 sub cleanup_foreign_architectures {
     my $self = shift;
+
+    # just skip if dpkg is to old for multiarch
+    if (! $self->get('Multiarch Support')) { return 1 };
 
     my $added_foreign_arches = $self->get('Added Foreign Arches');
 
