@@ -173,7 +173,7 @@ sub init_allowed_keys {
 	    TYPE => 'STRING',
 	    VARNAME => 'build_profiles',
 	    GROUP => 'Build options',
-	    DEFAULT => $ENV{'DEB_BUILD_PROFILES'},
+	    DEFAULT => $ENV{'DEB_BUILD_PROFILES'} || '',
 	    HELP => 'Build profiles. Separated by spaces.'
 	},
 	'HOSTNAME'				=> {
