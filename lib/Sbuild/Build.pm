@@ -967,7 +967,7 @@ sub fetch_source_files {
     $build_conflicts_indep =~ s/\n\s+/ /g if defined $build_conflicts_indep;
 
 
-    $self->log_subsubsection("Check foreign Arches");
+    $self->log_subsubsection("Check architectures");
     # Check for cross-arch dependencies
     # parse $build_depends* for explicit :arch and add the foreign arches, as needed
     sub get_explicit_arches
@@ -1017,16 +1017,15 @@ sub fetch_source_files {
     }
 
     my @keylist=keys %{$resolver->get('Initial Foreign Arches')};
-    $self->log( 'Initial Foreign Architectures: ');
-    $self->log( join ' ', @keylist, "\n");
-    $self->log('Foreign Architectures in build-deps: ');
-    $self->log( join ' ', @foreign_arches, "\n\n");
+    $self->log('Initial Foreign Architectures: ' . join ' ', @keylist, "\n")
+      if @keylist;
+    $self->log('Foreign Architectures in build-deps: '. join ' ', @foreign_arches, "\n\n")
+      if @foreign_arches;
 
     $self->run_chroot_update() if $added_any_new;
 
 
-
-    $self->log_subsubsection("Check arch");
+    # Check package arch makes sense to build
     if (!$dscarchs) {
 	$self->log("$dsc has no Architecture: field -- skipping arch check!\n");
     } else {
@@ -1050,6 +1049,7 @@ sub fetch_source_files {
 
     debug("Arch check ok ($host_arch included in $dscarchs)\n");
 
+    $self->log_subsubsection("Check dependencies");
 
     $self->set('Build Depends', $build_depends);
     $self->set('Build Depends Arch', $build_depends_arch);
@@ -2001,7 +2001,8 @@ sub generate_stats {
     my @keylist=keys %{$resolver->get('Initial Foreign Arches')};
     push @keylist, keys %{$resolver->get('Added Foreign Arches')};
     my $foreign_arches = join ' ', @keylist;
-    $self->add_stat('Foreign Architectures', $foreign_arches );
+    $self->add_stat('Foreign Architectures', $foreign_arches )
+        if $foreign_arches;
     $self->add_stat('Distribution', $self->get_conf('DISTRIBUTION'));
     $self->add_stat('Space', $self->get('This Space'));
     $self->add_stat('Build-Time',
