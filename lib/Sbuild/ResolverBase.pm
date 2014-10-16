@@ -157,15 +157,15 @@ sub get_foreign_architectures {
         {
             chomp;
             next unless $_;
-	    # if 'unknown option' in stderr then dpkg predates multiarch
-            if (m/unknown option/s) 
-	    {
+            # if 'unknown option' in stderr then dpkg predates multiarch
+            if (m/unknown option/s)
+            {
                 $self->set('Multiarch Support', 0);
-	    }
+            }
         }
         close $tmpfh2;
         # quietly return nothing if dpkg is too old (for use on older chroots)
-        if ($self->get('Multiarch Support')) 
+        if ($self->get('Multiarch Support'))
         {
             $self->log_error("Failed to get dpkg foreign-architecture config\n");
         }
