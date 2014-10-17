@@ -13,7 +13,7 @@ configuration.
       in the build if -P or --profiles is passed or the
       DEB_BUILD_PROFILES environment variable is set.
 
-  2) An Extra build-time repository and/or individual packages can be
+  2) An extra build-time repository and/or individual packages can be
       made available during the build. See the --extra-repository and
       --extra-package options.
 
