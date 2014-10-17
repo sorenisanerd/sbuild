@@ -1,4 +1,4 @@
-sbuild (0.65.0-1) UNRELEASED; urgency=medium
+sbuild (0.65.0-1) unstable; urgency=medium
 
   [ Benjamin Drung ]
   * Team upload.
@@ -35,7 +35,7 @@ sbuild (0.65.0-1) UNRELEASED; urgency=medium
   [ Geoffrey Thomas ]
   * Sbuild::ChrootSetup: Pass --no-options to gpg (Closes: #722103)
 
- -- Benjamin Drung <benjamin.drung@profitbricks.com>  Thu, 09 Oct 2014 16:25:29 +0200
+ -- Wookey <wookey@debian.org>  Fri, 17 Oct 2014 17:20:45 +0100
 
 sbuild (0.64.3-2) unstable; urgency=medium
 
