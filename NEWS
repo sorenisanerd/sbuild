@@ -1,13 +1,17 @@
 NEWS                                                            -*- outline -*-
 ----
 
-Welcome to sbuild 0.65.0.  Please read these release notes carefully.
+Welcome to sbuild 0.65.1.  Please read these release notes carefully.
 
 Full installation instructions are provided in the INSTALL file.  The
 README file also contains more specific notes regarding building and
 configuration.
 
-* Major changes in 0.65.0
+* Major changes in 0.65.1:
+
+  None.
+
+* Major changes in 0.65.0:
 
   1) Add support for build profiles. The specified profile is used
       in the build if -P or --profiles is passed or the
