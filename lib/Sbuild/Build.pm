@@ -1037,7 +1037,7 @@ sub fetch_source_files {
 	    }
 	}
 	if ($dscarchs ne "any" && !($valid_arch) &&
-	    !($dscarchs eq "all" && $self->get_conf('BUILD_ARCH_ALL')) )  {
+	    !($dscarchs =~ /\ball\b/ && $self->get_conf('BUILD_ARCH_ALL')) )  {
 	    my $msg = "$dsc: $host_arch not in arch list or does not match any arch wildcards: $dscarchs -- skipping\n";
 	    $self->log($msg);
 	    Sbuild::Exception::Build->throw(error => "$dsc: $host_arch not in arch list or does not match any arch wildcards: $dscarchs -- skipping",
