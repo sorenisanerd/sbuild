@@ -842,6 +842,25 @@ EOF
 			      reduce_profiles => 1,
 			      build_profiles => [ split / /, $self->get('Build Profiles') ]);
 
+    # sbuild turns build dependencies into the dependencies of a dummy binary
+    # package. Since binary package dependencies do not support :native the
+    # architecture qualifier, these have to either be removed during native
+    # compilation or replaced by the build (native) architecture during cross
+    # building
+    my $handle_native_archqual = sub {
+        my ($dep) = @_;
+        if ($dep->{archqual} && $dep->{archqual} eq "native") {
+            if ($self->get('Host Arch') eq $self->get('Build Arch')) {
+                $dep->{archqual} = undef;
+            } else {
+                $dep->{archqual} = $self->get('Build Arch');
+            }
+        }
+        return 1;
+    };
+    deps_iterate($positive, $handle_native_archqual);
+    deps_iterate($negative, $handle_native_archqual);
+
     $self->log("Merged Build-Depends: $positive\n") if $positive;
     $self->log("Merged Build-Conflicts: $negative\n") if $negative;
 
