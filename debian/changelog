@@ -109,22 +109,6 @@ sbuild (0.64.1-1) unstable; urgency=low
 
  -- Roger Leigh <rleigh@debian.org>  Sun, 13 Oct 2013 19:35:57 +0100
 
-sbuild (0.64.0-1+buildd20130602.0) wheezy; urgency=low
-
-  * allow to set maintainer_name and mailfrom in the distribution setting
-    in .builddrc (or in $default), and always set sbuild_mode=buildd, so
-    .sbuildrc doesn't need to exist (unless it contains
-    %individual_stalled_pkg_timeout )
-
- -- Andreas Barth <aba@ayous.org>  Tue, 02 Jun 2013 10:46:27 +0200
-
-sbuild (0.64.0-1+buildd20130522.0) wheezy; urgency=low
-
-  * don't force mailto to be set in .sbuildrc - we don't need it as buildd
-    sets it for us.
-
- -- Andreas Barth <aba@ayous.org>  Wed, 22 May 2013 22:25:02 +0200
-
 sbuild (0.64.0-1) unstable; urgency=low
 
   [ Thorsten Glaser ]
