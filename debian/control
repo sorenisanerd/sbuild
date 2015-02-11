@@ -35,7 +35,7 @@ Depends: adduser,
          libio-zlib-perl,
          libmime-lite-perl,
          perl-modules,
-         schroot (>= 1.4.22),
+         schroot (>= 1.6.0),
          ${misc:Depends},
          ${perl:Depends}
 Replaces: sbuild (<= 0.58.4-1)
