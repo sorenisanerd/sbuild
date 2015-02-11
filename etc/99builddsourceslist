@@ -21,12 +21,53 @@
 #####################################################################
 
 set -e
+shopt -s extglob
 
-if [ -f "$CHROOT_SCRIPT_CONFIG" ]; then
-    . "$CHROOT_SCRIPT_CONFIG"
-elif [ "$2" = "ok" ]; then
-    echo "script-config file '$CHROOT_SCRIPT_CONFIG' does not exist"
-    exit 1
+[ "$CHROOT_PROFILE" = "buildd" ] || exit 0
+
+. "$SETUP_DATA_DIR/common-data"
+. "$SETUP_DATA_DIR/common-functions"
+. "$SETUP_DATA_DIR/common-config"
+
+# The test below tries to determine if a source chroot is being used.
+# The apt configuration is generated only for non-source chroots.
+#
+# It originally tested CHROOT_SESSION_PURGE, but while it works for
+# LVM based chroots, it doesn't for tar based chroots which always
+# needed to be purged.
+#
+# Future versions of schroot will implement CHROOT_SESSION_SOURCE for
+# a more robust way to check for source chroots.
+#
+# See bug#718127 for more details.
+if ! echo "$CHROOT_DESCRIPTION" | grep -q '(source chroot)' ; then
+    CHROOT_ALIAS="${CHROOT_ALIAS/#experimental-/sid-experimental-}"
+    case $CHROOT_ALIAS in
+        +([^-])-+([^-])-@(kfreebsd|hurd)-*-sbuild*)
+        SUITE_BASE=$(echo $CHROOT_ALIAS | cut -f1 -d-)
+        SUITE_VARIANT=$(echo $CHROOT_ALIAS | cut -f2 -d-)
+        ;;
+        *-*-*-*-sbuild*)
+        SUITE_BASE=$(echo $CHROOT_ALIAS | cut -f1 -d-)
+        SUITE_VARIANT=$(echo $CHROOT_ALIAS | cut -f2,3 -d-)
+        ;;
+        +([^-])-@(kfreebsd|hurd)-*-sbuild*)
+        SUITE_BASE=$(echo $CHROOT_ALIAS | cut -f1 -d-)
+        if [ ${SUITE_BASE} != "sid" ]; then
+            SUITE_VARIANT="proposed-updates"
+        fi
+        ;;
+        *-*-*-sbuild*)
+        SUITE_BASE=$(echo $CHROOT_ALIAS | cut -f1 -d-)
+        SUITE_VARIANT=$(echo $CHROOT_ALIAS | cut -f2 -d-)
+        ;;
+        *-*-sbuild*)
+        SUITE_BASE=$(echo $CHROOT_ALIAS | cut -f1 -d-)
+        if [ ${SUITE_BASE} != "sid" ]; then
+            SUITE_VARIANT="proposed-updates"
+        fi
+        ;;
+    esac
 fi
 
 VERBOSE=""
@@ -34,27 +75,10 @@ if [ "$AUTH_VERBOSITY" = "verbose" ]; then
 	  VERBOSE="--verbose"
 fi
 
-if [ -f /etc/schroot/conf.buildd ]; then
+if [ -f /etc/schroot/dsa/default-mirror ]; then
+    debian_mirror=$(cat /etc/schroot/dsa/default-mirror)
+elif [ -f /etc/schroot/conf.buildd ]; then
     . /etc/schroot/conf.buildd
-fi
-
-if [ "$CHROOT_SESSION_PURGE" = "true" ]; then
-    case $CHROOT_NAME in
-        *-*-*-*-sbuild*)
-        SUITE_BASE=$(echo $CHROOT_NAME | cut -f1 -d-)
-        SUITE_VARIANT=$(echo $CHROOT_NAME | cut -f2,3 -d-)
-        ;;
-        *-*-*-sbuild*)
-        SUITE_BASE=$(echo $CHROOT_NAME | cut -f1 -d-)
-        SUITE_VARIANT=$(echo $CHROOT_NAME | cut -f2 -d-)
-        ;;
-        *-*-sbuild*)
-        SUITE_BASE=$(echo $CHROOT_NAME | cut -f1 -d-)
-        if [ ${SUITE_BASE} != "sid" ]; then
-            SUITE_VARIANT="proposed-updates"
-        fi
-        ;;
-    esac
 fi
 
 function domirror() {
@@ -65,17 +89,11 @@ function domirror() {
 }
 
 if [ "$1" = "setup-start" ] || [ "$1" = "setup-recover" ]; then
-    if [ -n "${SUITE_BASE}" ] && [ -f /etc/schroot/conf.buildd ]; then
+    if [ -n "${SUITE_BASE}" ] && ( [ -f /etc/schroot/conf.buildd ] || [ -f /etc/schroot/dsa/default-mirror ] ); then
         APT_LIST="${CHROOT_PATH}/etc/apt/sources.buildd.list"
         APT_CONF="${CHROOT_PATH}/etc/apt/apt.conf.d/99buildd.conf"
         APT_KEYS=""
         rm -f "${APT_LIST}" "${APT_CONF}"
-        if [ "${SUITE_BASE}" = 'lenny' ]; then
-            APT_CONF="${CHROOT_PATH}/etc/apt/apt.conf"
-            if [ -f ${APT_CONF} ]; then
-                mv ${APT_CONF} ${APT_CONF}.PREBUILDD
-            fi
-        fi
 
         COMPONENT="main contrib"
         COMPONENT_SRC="main contrib non-free"
@@ -84,37 +102,54 @@ if [ "$1" = "setup-start" ] || [ "$1" = "setup-recover" ]; then
             SUITES="${SUITE_BASE} ${SUITE_BASE}-proposed-updates"
             [ -n "${debian_mirror}" ] && domirror "${debian_mirror} SUITE COMPONENT" ${APT_LIST}
             domirror "http://ftp.debian.org/debian SUITE COMPONENT" ${APT_LIST}
-            [ "${debian_incoming}" != 'no' ] && domirror "http://incoming.debian.org/debian SUITE COMPONENT" ${APT_LIST}
+            if [ "${debian_incoming}" != 'no' ]; then
+                SUITES="${SUITE_BASE}-proposed-updates"
+                domirror "http://incoming.debian.org/debian-buildd buildd-SUITE COMPONENT" ${APT_LIST}
+            fi
+
+        elif [ "${SUITE_VARIANT}" = 'lts' ]; then
+            SUITES="${SUITE_BASE} ${SUITE_BASE}-lts"
+            [ -n "${debian_mirror}" ] && domirror "${debian_mirror} SUITE COMPONENT" ${APT_LIST}
+            domirror "http://ftp.debian.org/debian SUITE COMPONENT" ${APT_LIST}
+            if [ "${debian_incoming}" != 'no' ]; then
+                SUITES="${SUITE_BASE}-lts"
+                domirror "http://incoming.debian.org/debian-buildd buildd-SUITE COMPONENT" ${APT_LIST}
+            fi
 
         elif [ "${SUITE_VARIANT}" = 'security' ]; then
             SUITES="${SUITE_BASE}"
             [ -n "${debian_mirror}" ] && domirror "${debian_mirror} ${SUITE_BASE} COMPONENT" ${APT_LIST}
             domirror "http://ftp.debian.org/debian ${SUITE_BASE} COMPONENT" ${APT_LIST}
-            [ -n "${security_mirror}" ] && domirror "${security_mirror} ${SUITE_BASE} COMPONENT" ${APT_LIST}
+            [ -n "${security_mirror}" ] && domirror "${security_mirror} ${SUITE_BASE}/updates COMPONENT" ${APT_LIST}
             domirror "http://security-master.debian.org/debian-security ${SUITE_BASE}/updates COMPONENT" ${APT_LIST}
-            domirror "http://security-master.debian.org/buildd-${SUITE_BASE} /" ${APT_LIST}
-
-        elif [ "${SUITE_VARIANT}" = 'volatile' ]; then
-            SUITES="${SUITE_BASE} ${SUITE_BASE}-proposed-updates"
-            [ -n "${debian_mirror}" ] && domirror "${debian_mirror} SUITE COMPONENT" ${APT_LIST}
-            domirror "http://ftp.debian.org/debian SUITE COMPONENT" ${APT_LIST}
-            [ -n "${volatile_mirror}" ] && domirror "${volatile_mirror} SUITE/volatile COMPONENT" ${APT_LIST}
-            domirror "http://volatile.debian.org/debian-volatile SUITE/volatile COMPONENT" ${APT_LIST}
+            domirror "http://security-master.debian.org/debian-security-buildd buildd-${SUITE_BASE}/updates COMPONENT" ${APT_LIST}
 
         elif [ "${SUITE_VARIANT%%-sloppy}" = 'backports' ]; then
-            SUITES="${SUITE_BASE} ${SUITE_BASE}-proposed-updates"
+            SUITES="${SUITE_BASE}"
             [ -n "${debian_mirror}" ] && domirror "${debian_mirror} SUITE COMPONENT" ${APT_LIST}
             domirror "http://ftp.debian.org/debian SUITE COMPONENT" ${APT_LIST}
-            SUITES="${SUITE_BASE}"
-            [ -n "${backports_mirror}" ] && domirror "${backports_mirror} SUITE-backports COMPONENT" ${APT_LIST}
-            domirror "http://backports.debian.org/debian-backports/ SUITE-backports COMPONENT" ${APT_LIST}
-            domirror "http://backports-master.debian.org/buildd/${SUITE_BASE}-backports /" ${APT_LIST}
-            if [ "$(echo ${SUITE_VARIANT} | cut -d - -f 2)" = "sloppy" ]; then
-                [ -n "${backports_mirror}" ] && domirror "${backports_mirror} SUITE-backports-sloppy COMPONENT" ${APT_LIST}
-                domirror "http://backports.debian.org/debian-backports/ SUITE-backports-sloppy COMPONENT" ${APT_LIST}
-                domirror "http://backports-master.debian.org/buildd/${SUITE_BASE}-backports-sloppy /" ${APT_LIST}
+            if [ "$SUITE" != "squeeze" ]; then
+                [ -n "${debian_mirror}" ] && domirror "${debian_mirror} SUITE-backports COMPONENT" ${APT_LIST}
+                domirror "http://ftp.debian.org/debian SUITE-backports COMPONENT" ${APT_LIST}
+            else
+                [ -n "${backports_mirror}" ] && domirror "${backports_mirror} SUITE COMPONENT" ${APT_LIST}
+                domirror "http://backports.debian.org/debian-backports/ SUITE-backports COMPONENT" ${APT_LIST}
             fi
-            APT_KEYS="${APT_KEYS} backports.org"
+            if [ "${debian_incoming}" != 'no' ]; then
+                domirror "http://incoming.debian.org/debian-buildd buildd-SUITE-backports COMPONENT" ${APT_LIST}
+            fi
+            if [ "$(echo ${SUITE_VARIANT} | cut -d - -f 2)" = "sloppy" ]; then
+                if [ "$SUITE" != "squeeze" ]; then
+                    [ -n "${debian_mirror}" ] && domirror "${debian_mirror} SUITE-backports-sloppy COMPONENT" ${APT_LIST}
+                    domirror "http://ftp.debian.org/debian SUITE-backports-sloppy COMPONENT" ${APT_LIST}
+                else
+                    [ -n "${backports_mirror}" ] && domirror "${backports_mirror} SUITE-backports-sloppy COMPONENT" ${APT_LIST}
+                    domirror "http://backports.debian.org/debian-backports/ SUITE-backports-sloppy COMPONENT" ${APT_LIST}
+                fi
+                if [ "${debian_incoming}" != 'no' ]; then
+                    domirror "http://incoming.debian.org/debian-buildd buildd-SUITE-backports-sloppy COMPONENT" ${APT_LIST}
+                fi
+            fi
 
         elif [ "${SUITE_VARIANT}" = 'edu' ]; then
             SUITES="${SUITE_BASE} ${SUITE_BASE}-proposed-updates"
@@ -131,9 +166,9 @@ if [ "$1" = "setup-start" ] || [ "$1" = "setup-recover" ]; then
                 SUITES="unstable experimental"
             fi
             [ -n "${debian_mirror}" ] && domirror "${debian_mirror} SUITE COMPONENT" ${APT_LIST}
+            domirror "http://ftp.debian.org/debian SUITE COMPONENT" ${APT_LIST}
             if [ "${debian_incoming}" != 'no' ]; then
-                domirror "http://incoming.debian.org/debian SUITE COMPONENT" ${APT_LIST}
-                domirror "http://incoming.debian.org/buildd-SUITE /" ${APT_LIST}
+                domirror "http://incoming.debian.org/debian-buildd buildd-SUITE COMPONENT" ${APT_LIST}
             fi
 
         else
@@ -144,6 +179,7 @@ if [ "$1" = "setup-start" ] || [ "$1" = "setup-recover" ]; then
         echo 'Acquire::PDiffs "false";' >> ${APT_CONF}
         echo 'APT::Install-Recommends 0;' >> ${APT_CONF}
         echo 'Dir::Etc::SourceList "sources.buildd.list";' >> ${APT_CONF}
+        echo 'Acquire::Languages "none";' >> ${APT_CONF}
 
         if [ -n "${APT_KEYS}" ]; then
             for KEY in ${APT_KEYS}; do
@@ -170,36 +206,24 @@ if [ "$1" = "setup-start" ] || [ "$1" = "setup-recover" ]; then
                     fi
                     echo deb http://security-master.debian.org/debian-security ${SUITE_BASE}/updates main contrib >> ${APT_LIST_AUTO}
                     echo deb-src http://security-master.debian.org/debian-security ${SUITE_BASE}/updates main contrib >> ${APT_LIST_AUTO}
-                    echo deb http://security-master.debian.org/buildd-${SUITE_BASE} / >> ${APT_LIST_AUTO}
-                    echo deb-src http://security-master.debian.org/buildd-${SUITE_BASE} / >> ${APT_LIST_AUTO}
-                elif [ ${SUITE_VARIANT} = 'volatile' ]; then
-                        : > ${APT_LIST_AUTO}
-                    if [ -n "${volatile_mirror}" ]; then
-                        echo deb ${volatile_mirror} ${SUITE_BASE}-proposed-updates/volatile main contrib non-free >> ${APT_LIST_AUTO}
-                        echo deb ${volatile_mirror} ${SUITE_BASE}/volatile main contrib non-free >> ${APT_LIST_AUTO}
-                        echo deb-src ${volatile_mirror} ${SUITE_BASE}-proposed-updates/volatile main contrib non-free >> ${APT_LIST_AUTO}
-                        echo deb-src ${volatile_mirror} ${SUITE_BASE}/volatile main contrib non-free >> ${APT_LIST_AUTO}
-                    fi
-                    echo deb http://volatile.debian.net/debian-volatile ${SUITE_BASE}-proposed-updates/volatile main contrib non-free >> ${APT_LIST_AUTO}
-                    echo deb http://volatile.debian.net/debian-volatile ${SUITE_BASE}/volatile main contrib non-free >> ${APT_LIST_AUTO}
-                    echo deb-src http://volatile.debian.net/debian-volatile ${SUITE_BASE}-proposed-updates/volatile main contrib non-free >> ${APT_LIST_AUTO}
-                    echo deb-src http://volatile.debian.net/debian-volatile ${SUITE_BASE}/volatile main contrib non-free >> ${APT_LIST_AUTO}
+                    echo deb http://security-master.debian.org/debian-security-buildd buildd-${SUITE_BASE}/updates main contrib >> ${APT_LIST_AUTO}
+                    echo deb-src http://security-master.debian.org/debian-security-buildd buildd-${SUITE_BASE}/updates main contrib >> ${APT_LIST_AUTO}
                 elif [ ${SUITE_VARIANT%%-sloppy} = 'backports' ]; then
                         : > ${APT_LIST_AUTO}
                     if [ -n "${backports_mirror}" ]; then
-                        echo deb ${backports_mirror} ${SUITE_BASE}-backports main contrib non-free >> ${APT_LIST_AUTO}
+                        echo deb ${backports_mirror} ${SUITE_BASE}-backports main contrib >> ${APT_LIST_AUTO}
                         echo deb-src ${backports_mirror} ${SUITE_BASE}-backports main contrib non-free >> ${APT_LIST_AUTO}
                     fi
-                    echo deb http://backports.debian.org/debian-backports/ ${SUITE_BASE}-backports main contrib non-free >> ${APT_LIST_AUTO}
+                    echo deb http://backports.debian.org/debian-backports/ ${SUITE_BASE}-backports main contrib >> ${APT_LIST_AUTO}
                     echo deb-src http://backports.debian.org/debian-backports/ ${SUITE_BASE}-backports main contrib non-free >> ${APT_LIST_AUTO}
                     echo deb http://backports-master.debian.org/buildd/${SUITE_BASE}-backports / >> ${APT_LIST_AUTO}
                     echo deb-src http://backports-master.debian.org/buildd/${SUITE_BASE}-backports / >> ${APT_LIST_AUTO}
                     if [ "$(echo ${SUITE_VARIANT} | cut -d - -f 2)" = "sloppy" ]; then
                         if [ -n "${backports_mirror}" ]; then
-                            echo deb ${backports_mirror} ${SUITE_BASE}-backports-sloppy main contrib non-free >> ${APT_LIST_AUTO}
+                            echo deb ${backports_mirror} ${SUITE_BASE}-backports-sloppy main contrib >> ${APT_LIST_AUTO}
                             echo deb-src ${backports_mirror} ${SUITE_BASE}-backports-sloppy main contrib non-free >> ${APT_LIST_AUTO}
                         fi
-                        echo deb http://backports.debian.org/debian-backports/ ${SUITE_BASE}-backports-sloppy main contrib non-free >> ${APT_LIST_AUTO}
+                        echo deb http://backports.debian.org/debian-backports/ ${SUITE_BASE}-backports-sloppy main contrib >> ${APT_LIST_AUTO}
                         echo deb-src http://backports.debian.org/debian-backports/ ${SUITE_BASE}-backports-sloppy main contrib non-free >> ${APT_LIST_AUTO}
                         echo deb http://backports-master.debian.org/buildd/${SUITE_BASE}-backports-sloppy / >> ${APT_LIST_AUTO}
                         echo deb-src http://backports-master.debian.org/buildd/${SUITE_BASE}-backports-sloppy / >> ${APT_LIST_AUTO}
@@ -207,28 +231,21 @@ if [ "$1" = "setup-start" ] || [ "$1" = "setup-recover" ]; then
                 elif [ ${SUITE_VARIANT} = 'experimental' ]; then
                     : > ${APT_LIST_AUTO}
                     if [ -n "${debian_mirror}" ]; then
-                        echo deb ${debian_mirror} experimental main contrib non-free >> ${APT_LIST_AUTO}
+                        echo deb ${debian_mirror} experimental main contrib >> ${APT_LIST_AUTO}
                         echo deb-src ${debian_mirror} experimental main contrib non-free >> ${APT_LIST_AUTO}
                     fi
-                    echo deb     http://ftp.debian.org/debian experimental main contrib non-free >> ${APT_LIST_AUTO}
+                    echo deb     http://ftp.debian.org/debian experimental main contrib >> ${APT_LIST_AUTO}
                     echo deb-src http://ftp.debian.org/debian experimental main contrib non-free >> ${APT_LIST_AUTO}
-                    echo deb     http://incoming.debian.org/buildd-experimental / >> ${APT_LIST_AUTO}
-                    echo deb-src http://incoming.debian.org/buildd-experimental / >> ${APT_LIST_AUTO}
+                    echo deb     http://incoming.debian.org/debian-buildd buildd-experimental main contrib >> ${APT_LIST_AUTO}
+                    echo deb-src http://incoming.debian.org/debian-buildd buildd-experimental main contrib non-free >> ${APT_LIST_AUTO}
 		fi
 	fi
     fi
 elif [ "$1" = "setup-stop" ]; then
-    if [ -n "${SUITE_BASE}" ] && [ -f /etc/schroot/conf.buildd ]; then
+    if [ -n "${SUITE_BASE}" ] && ( [ -f /etc/schroot/conf.buildd ] || [ -f /etc/schroot/dsa/default-mirror ] ); then
         APT_LIST="${CHROOT_PATH}/etc/apt/sources.buildd.list"
         APT_CONF="${CHROOT_PATH}/etc/apt/apt.conf.d/99buildd.conf"
         rm -f "${APT_LIST}" "${APT_CONF}"
-        if [ "${SUITE_BASE}" = 'lenny' ]; then
-            APT_CONF="${CHROOT_PATH}/etc/apt/apt.conf"
-            rm -f ${APT_CONF}
-            if [ -f ${APT_CONF}.PREBUILDD ]; then
-                mv ${APT_CONF}.PREBUILDD ${APT_CONF}
-            fi
-        fi
     else
 	if [ -n "$SUITE_VARIANT" ]; then
 		SOURCES_FILE_NAME="${SUITE_BASE}-${SUITE_VARIANT}.sources"
@@ -236,7 +253,7 @@ elif [ "$1" = "setup-stop" ]; then
 
 		if [ -f "$SOURCES_FILE_PATH" ]; then
 				rm -f $VERBOSE "${CHROOT_PATH}/etc/apt/sources.list.d/${SOURCES_FILE_NAME}.list"
-                elif [ ${SUITE_VARIANT} = 'security' ] || [ ${SUITE_VARIANT} = 'volatile' ] || [ ${SUITE_VARIANT} = 'backports' ] || [ ${SUITE_VARIANT} = 'experimental' ] ; then
+                elif [ ${SUITE_VARIANT} = 'security' ] || [ ${SUITE_VARIANT} = 'backports' ] || [ ${SUITE_VARIANT} = 'experimental' ] ; then
 				rm -f $VERBOSE "${CHROOT_PATH}/etc/apt/sources.list.d/auto.list"
 		fi
 	fi
