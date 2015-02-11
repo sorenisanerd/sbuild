@@ -23,7 +23,6 @@ usage() {
     echo "Valid suites: oldstable, stable, testing, unstable, experimental," >&2
     echo "              oldstable-security, stable-security, testing-security," >&2
     echo "              oldstable-backports, stable-backports," >&2
-    echo "              oldstable-volatile, stable-volatile," >&2
     echo "              oldstable-edu, stable-edu, testing-edu" >&2
     echo "If vgname is given, the script will setup schroot" >&2
     echo "to use snapshots based on a source lv." >&2
@@ -79,19 +78,17 @@ then
 fi
 
 BASE="$SUITE"
-OLDSTABLE="lenny"
-STABLE="squeeze"
-TESTING="wheezy"
+OLDSTABLE="squeeze"
+STABLE="wheezy"
+TESTING="jessie"
 case "$SUITE" in
     oldstable) BASE=$OLDSTABLE ;;
     oldstable-security) BASE=$OLDSTABLE; VARIANT="security" ;;
     oldstable-backports) BASE=$OLDSTABLE; VARIANT="backports" ;;
-    oldstable-volatile) BASE=$OLDSTABLE; VARIANT="volatile" ;;
     oldstable-edu) BASE=$OLDSTABLE; VARIANT="edu" ;;
     stable) BASE=$STABLE ;;
     stable-security) BASE=$STABLE; VARIANT="security" ;;
     stable-backports) BASE=$STABLE; VARIANT="backports" ;;
-    stable-volatile) BASE=$STABLE; VARIANT="volatile" ;;
     stable-edu) BASE=$STABLE; VARIANT="edu" ;;
     testing) BASE=$TESTING ;;
     testing-security) BASE=$TESTING; VARIANT="security" ;;
@@ -121,7 +118,9 @@ check_prerequisites() {
         error "/etc/schroot/chroot.d not found, schroot not installed?"
     [ ! -d $TARGET ] || error "Target $TARGET already exists."
     ! schroot -l | grep ^${IDENTIFIER}-${ARCH}-sbuild$ -q || error "schroot target ${IDENTIFIER}-${ARCH}-sbuild exists"
-    ! schroot -l | grep ^${SUITE}-${ARCH}-sbuild$ -q || error "schroot target ${SUITE}-${ARCH}-sbuild exists"
+    if [ "${SUITE}" = experimental ]; then
+        ! schroot -l | grep ^${SUITE}-${ARCH}-sbuild$ -q || error "schroot target ${SUITE}-${ARCH}-sbuild exists"
+    fi
     [ ! -f "/etc/schroot/chroot.d/buildd-${IDENTIFIER}-${ARCH}" ] || error "schroot file /etc/schroot/chroot.d/buildd-${IDENTIFIER}-${ARCH} already exists"
     if [ -z "$VGNAME" ]; then
         mkdir -p ~buildd/chroots
@@ -136,7 +135,7 @@ do_debootstrap() {
     sudo debootstrap \
         --arch=$ARCH \
         --variant=buildd \
-        --include=sudo,fakeroot,build-essential,debfoster,apt \
+        --include=fakeroot,build-essential,debfoster,apt \
         $BASE \
         $TARGET \
         $MIRROR
@@ -151,25 +150,30 @@ EOT
     sudo mv "${TEMPFILE}" "${TARGET}/usr/sbin/policy-rc.d"
     sudo chown root: "${TARGET}/usr/sbin/policy-rc.d"
     sudo chmod 0755 "${TARGET}/usr/sbin/policy-rc.d"
+    # With wheezy and up /dev/shm is a symlink to /run/shm; because all
+    # suites share the same setup scripts, this needs to be reverted.
+    echo "I: Switching /dev/shm to a real directory..."
+    if [ -L "${TARGET}/dev/shm" ]
+    then
+        sudo rm "${TARGET}/dev/shm"
+        sudo mkdir "${TARGET}/dev/shm"
+        sudo chmod a+w,o+t "${TARGET}/dev/shm"
+    fi
     ensure_target_unmounted
-}
-
-setup_symlink() {
-    echo "I: Setting up symlink..."
-    ln -sv "$(basename $TARGET)" $SUITE
 }
 
 setup_schroot() {
     echo "I: Setting up schroot configuration..."
     TEMPFILE="$(mktemp)"
-    SUITEEXTRA=${SUITEEXTRA:-${SUITE}${EXTRA}}
     cat > "${TEMPFILE}" <<EOT
 [${IDENTIFIER}${EXTRA}-${ARCH}-sbuild]
 description=Debian ${IDENTIFIER} buildd chroot
 users=buildd
 root-users=buildd
-aliases=${SUITEEXTRA}-${ARCH}-sbuild
 EOT
+    if [ -n "${SUITEEXTRA}" ]; then
+echo "aliases=${SUITEEXTRA}-${ARCH}-sbuild" >> "${TEMPFILE}"
+    fi
     if [ -z "$VGNAME" ]; then
         echo "type=directory" >> "${TEMPFILE}"
         echo "directory=${TARGET}" >> "${TEMPFILE}"
@@ -181,17 +185,17 @@ device=/dev/${VGNAME}/buildd-${IDENTIFIER}-${ARCH}
 lvm-snapshot-options=--size ${LVSIZE}
 source-users=buildd
 source-root-users=buildd
-script-config=buildd/config
+profile=buildd
 EOT
-        SCHROOT="schroot -c ${IDENTIFIER}-${ARCH}-sbuild-source -u root -d /root --"
+        SCHROOT="schroot -c source:${IDENTIFIER}-${ARCH}-sbuild -u root -d /root --"
     fi
 
     if \
         [ "$ARCH" = "mips" ] || \
         [ "$ARCH" = "sparc" ] || \
         [ "$ARCH" = "i386" ] || \
-        [ "$ARCH" = "powerpc" ] || \
-        [ "$ARCH" = "s390" ]; then
+        [ "$ARCH" = "s390" ] || \
+        [ "$ARCH" = "powerpc" ]; then
             echo "personality=linux32" >>"${TEMPFILE}"
     fi
     sudo mv "${TEMPFILE}" "/etc/schroot/chroot.d/buildd-${IDENTIFIER}${EXTRA}-${ARCH}"
@@ -203,7 +207,7 @@ setup_schroot_variant() {
     echo VARIANT: $EXTRA
     if ! [ -f "/etc/schroot/chroot.d/buildd-${IDENTIFIER}${EXTRA}-${ARCH}" ] &&
        ! schroot -l | grep ^${IDENTIFIER}${EXTRA}-${ARCH}-sbuild$ -q &&
-       ! schroot -l | grep ^${SUITEEXTRA}-${ARCH}-sbuild$ -q ; then
+       ( [ -z "${SUITEEXTRA}" ] || ! schroot -l | grep ^${SUITEEXTRA}-${ARCH}-sbuild$ -q ) ; then
         setup_schroot
     fi
 }
@@ -230,14 +234,6 @@ EOT
         cat >> "${TEMPFILE}" <<EOT
 deb http://backports-master.debian.org/buildd/ ${BASE}-backports main contrib non-free
 deb-src http://backports-master.debian.org/buildd/ ${BASE}-backports main contrib non-free
-EOT
-    fi
-
-    if [ "$VARIANT" = "volatile" ]; then
-        echo "I: Adding volatile entries to sources.list..."
-        cat >> "${TEMPFILE}" <<EOT
-deb     http://volatile.debian.net/debian-volatile      ${BASE}-proposed-updates/volatile main contrib non-free
-deb-src http://volatile.debian.net/debian-volatile      ${BASE}-proposed-updates/volatile main contrib non-free
 EOT
     fi
 
@@ -323,7 +319,6 @@ adjust_debconf() {
 }
 
 adjust_dpkg() {
-    if [ "${BASE}" != "lenny" ]; then
         ensure_target_mounted
         echo "I: Adding apt.conf..."
         TEMPFILE="$(mktemp)"
@@ -344,7 +339,6 @@ EOT
         sudo chmod 0644 "${TARGET}/etc/dpkg/dpkg.cfg.d/force-confnew"
 
         ensure_target_unmounted
-    fi
 }
 
 setup_sbuild() {
@@ -356,9 +350,6 @@ setup_sbuild() {
     sudo mkdir -p "$TARGET/var/lib/sbuild/srcdep-lock"
     sudo chown -R root:sbuild "$TARGET/var/lib/sbuild"
     sudo chmod -R 02775 "$TARGET/var/lib/sbuild"
-    sudo mkdir -p "$TARGET/var/lock/sbuild"
-    sudo chown -R root:sbuild "$TARGET/var/lock/sbuild"
-    sudo chmod -R 02775 "$TARGET/var/lock/sbuild"
     ensure_target_unmounted
 }
 
@@ -399,7 +390,6 @@ setup_debfoster() {
 build-essential
 debfoster
 fakeroot
-sudo
 EOT
 
 # Semi consensus: packages should depend on gcc-multilib if they
@@ -429,7 +419,7 @@ setup_logical_volume() {
     echo "I: Setting up logical volume ${LVPATH}..."
     sudo lvcreate --name "buildd-${IDENTIFIER}-${ARCH}" --size "${LVSIZE}" "${VGNAME}"
     echo "I: Setting up file system on ${LVPATH}..."
-    sudo mkfs.ext3 "${LVPATH}"
+    sudo mkfs.ext4 "${LVPATH}"
     sudo tune2fs -i 0 -c 0 "${LVPATH}"
     TMPMOUNTDIR=$(mktemp -d)
 }
@@ -465,29 +455,19 @@ if ! [ -f /etc/schroot/conf.buildd ]; then
 fi
 
 do_debootstrap
-# As chroots will be controlled by schroot anyway, the symlink should not be
-# needed anymore.
-#setup_symlink
 setup_schroot
 if ! [ -z "$VGNAME" ] && [ -z "$VARIANT" ]; then
-    variants="security volatile backports"
+    variants="security backports"
     if [ "$ARCH" == "i386" -o "$ARCH" == "amd64" -o "$ARCH" == "powerpc" ]; then
         variants="${variants} edu"
     fi
     if [ "$BASE" == "sid" ]; then variants="experimental"; fi
     for EXTRA in $variants; do
         EXTRA=-${EXTRA}
-        SUITEEXTRA=${SUITE}${EXTRA}
+        SUITEEXTRA=""
         if [ "$BASE" = "sid" ]; then SUITEEXTRA="experimental"; fi
 
         setup_schroot_variant
-
-        if [ "$BASE" = "lenny" ] && [ "$EXTRA" = "-backports" ]; then
-            # Also generate -sloppy chroots.
-            EXTRA=-backports-sloppy
-            SUITEEXTRA=${SUITE}${EXTRA}
-            setup_schroot_variant
-        fi
     done
 fi
 setup_sources
