@@ -103,6 +103,9 @@ sub setup ($) {
 	'WANNA_BUILD_API'			=> {
 	    DEFAULT => undef,
 	},
+	'WANNA_BUILD_MIN_AGE'			=> {
+	    DEFAULT => undef,
+	},
 	'DUPLOAD_LOCAL_QUEUE_DIR'		=> {
 	    CHECK => $validate_directory_in_home,
 	    DEFAULT => 'upload'
@@ -122,12 +125,22 @@ sub setup ($) {
 	'LOGS_MAILED_TO'			=> {
 	    DEFAULT => undef
 	},
+	'LOGS_MAIL_ALSO'			=> {
+	    DEFAULT => undef
+	},
 	'BUILD_DEP_RESOLVER'			=> {
 	    DEFAULT => undef
 	},
 	'SIGN_WITH'				=> {
 	    DEFAULT => undef
-	},);
+	},
+	'MAINTAINER_NAME'			=> {
+	    DEFAULT => undef
+	},
+	'MAILFROM'				=> {
+	    DEFAULT => undef
+	},
+        );
 
     $conf->set_allowed_keys(\%buildd_dist_keys);
 

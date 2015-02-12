@@ -148,7 +148,9 @@ sub get_next_WANNABUILD {
 	    my $pipe = $db->pipe_query(
                 ($dist_config->get('WANNA_BUILD_API') ? '--api '.$dist_config->get('WANNA_BUILD_API') : ''),
 		'--list=needs-build',
-		'--dist=' . $dist_name);
+		'--dist=' . $dist_name,
+                ($dist_config->get('WANNA_BUILD_MIN_AGE') ? '--min-age '.$dist_config->get('WANNA_BUILD_MIN_AGE') : ''),
+                );
 	    if (!$pipe) {
 		$self->log("Can't spawn wanna-build --list=needs-build: $!\n");
 		next MAINLOOP;
@@ -375,6 +377,7 @@ sub do_wanna_build {
 			   'extra-conflicts' => 'extra-conflicts',
 			   'build_dep_resolver' => 'build_dep_resolver',
 			   'arch_all' => 'arch_all',
+			   'mail_logs' => 'mail_logs',
 			 };
             for my $f (keys %$fields) {
                 $ret->{$f} = $pkgd->{$fields->{$f}} if $pkgd->{$fields->{$f}};
@@ -516,6 +519,10 @@ sub do_build {
 			"--stats-dir=" . $self->get_conf('HOME') . "/stats",
 			"--dist=" . $dist_config->get('DIST_NAME');
 
+    push @sbuild_args, "--sbuild-mode=buildd";
+    push @sbuild_args, "--mailfrom=".$dist_config->get('MAILFROM') if $dist_config->get('MAILFROM');
+    push @sbuild_args, "--maintainer=".$dist_config->get('MAINTAINER_NAME') if $dist_config->get('MAINTAINER_NAME');
+
     if ($dist_config->get('SIGN_WITH')) {
 	push @sbuild_args, '--keyid=' . $dist_config->get('SIGN_WITH');
     }
@@ -525,6 +532,8 @@ sub do_build {
     #it, we hope that the address is configured in .sbuildrc and the right one:
     if ($dist_config->get('LOGS_MAILED_TO')) {
 	push @sbuild_args, '--mail-log-to=' . $dist_config->get('LOGS_MAILED_TO');
+    } elsif ($dist_config->get('LOGS_MAIL_ALSO') || $todo->{'mail_logs'}) {
+        push @sbuild_args, '--mail-log-to=' . join (',', grep { $_ } ($dist_config->get('LOGS_MAIL_ALSO'), $todo->{'mail_logs'}));
     }
     #Some distributions (bpo, experimental) require a more complex dep resolver.
     #Ask sbuild to use another build-dep resolver if the config says so:
