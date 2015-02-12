@@ -16,6 +16,14 @@ set -e
 #        * <disappearer's-postrm> `disappear' <r>overwrit>r> <new-version>
 # for details, see /usr/share/doc/packaging-manual/
 
+if which dpkg-maintscript-helper >/dev/null
+then
+    # No predepends possible because Lenny needs to be supported.
+    dpkg-maintscript-helper rm_conffile /etc/schroot/script-defaults.buildd -- "$@"
+    dpkg-maintscript-helper rm_conffile /etc/schroot/mount-defaults.buildd -- "$@"
+    dpkg-maintscript-helper rm_conffile /etc/schroot/setup.d/25nssdatabases -- "$@"
+fi
+
 case "$1" in
 
     remove|upgrade|failed-upgrade|abort-install|abort-upgrade)
@@ -25,7 +33,7 @@ case "$1" in
     purge|disappear)
 
 	# Lock buildd account.
-	usermod -L -e 1 buildd
+	usermod -L -e 1 buildd || true
 
         ;;
 

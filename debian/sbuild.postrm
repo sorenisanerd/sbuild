@@ -59,7 +59,7 @@ case "$1" in
     purge|disappear)
 
 	# Lock sbuild account.
-	usermod -L -e 1 sbuild
+	usermod -L -e 1 sbuild || true
 
 	rm_conffile "/etc/sbuild.conf"
 	rm_conffile "/etc/sbuild.conf.local"

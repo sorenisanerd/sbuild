@@ -22,6 +22,14 @@ set -e
 #     installation fails and the `postinst' is called with `abort-upgrade',
 #     `abort-remove' or `abort-deconfigure'.
 
+if which dpkg-maintscript-helper >/dev/null
+then
+    # No predepends possible because Lenny needs to be supported.
+    dpkg-maintscript-helper rm_conffile /etc/schroot/script-defaults.buildd -- "$@"
+    dpkg-maintscript-helper rm_conffile /etc/schroot/mount-defaults.buildd -- "$@"
+    dpkg-maintscript-helper rm_conffile /etc/schroot/setup.d/25nssdatabases -- "$@"
+fi
+
 case "$1" in
     configure)
 
@@ -30,7 +38,7 @@ case "$1" in
 		--shell /bin/bash --group --gecos "Debian build daemon" buildd
         fi
 	# Unlock account in case it was locked from previous purge.
-	usermod -U -e '' buildd
+	usermod -U -e '' buildd || true
 
         # check validity of buildd user and group
 	if [ "$(id -u buildd)" -eq 0 ]; then
@@ -73,6 +81,8 @@ Please fix this and reinstall this package." >&2
         # Drop the irrelevant options run-setup-scripts / run-exec-scripts, see #579926
 	# Use buildd/config in place of old script-defaults.buildd
         find /etc/schroot/chroot.d/ -name 'buildd-*' -print0 | xargs -0 -r sed -e 's/^run-setup-scripts=/#&/' -e 's/^run-exec-scripts=/#&/' -e 's;^script-config=script-defaults\.buildd;script-config=buildd/config;' -i
+        # for wheezy-upgrades, replace script-config by profile
+        find /etc/schroot/chroot.d/ -name 'buildd-*' -print0 | xargs -0 -r sed -e 's;^script-config=buildd/config;profile=buildd;' -i
 
         ;;
 
