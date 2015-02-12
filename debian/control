@@ -12,8 +12,7 @@ Build-Depends: debhelper (>> 7.0.0),
                libexception-class-perl,
                libfilesys-df-perl,
                libio-zlib-perl,
-               libmime-lite-perl,
-               perl-modules
+               libmime-lite-perl
 Standards-Version: 3.9.6
 Vcs-Browser: https://anonscm.debian.org/cgit/buildd-tools/sbuild.git
 Vcs-Git: git://anonscm.debian.org/buildd-tools/sbuild
@@ -34,7 +33,6 @@ Depends: adduser,
          libfilesys-df-perl,
          libio-zlib-perl,
          libmime-lite-perl,
-         perl-modules,
          schroot (>= 1.6.0),
          ${misc:Depends},
          ${perl:Depends}
@@ -54,7 +52,6 @@ Architecture: all
 Depends: adduser,
          apt-utils,
          libsbuild-perl (= ${source:Version}),
-         perl-modules,
          ${misc:Depends},
          ${perl:Depends},
          ${shlibs:Depends}
