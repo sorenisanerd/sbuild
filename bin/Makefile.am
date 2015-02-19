@@ -57,7 +57,13 @@ EXTRA_DIST =			\
 	$(bin_SCRIPTS)		\
 	$(sbin_SCRIPTS) 	\
 	$(sbuilddata_SCRIPTS)	\
-	$(doc_DATA)
+	$(doc_DATA)		\
+	buildd-make-chroot	\
+	check-old-builds	\
+	finish-build		\
+	sbuild-debuild		\
+	setup_system		\
+	wb-ssh-wrapper
 
 install-exec-hook:
 # Additional directories

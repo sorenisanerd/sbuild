@@ -37,9 +37,15 @@ dist-hook:
 EXTRA_DIST =				\
 	bootstrap			\
 	debian				\
+	lisp				\
 	scripts/git-tag-release		\
 	scripts/git-version		\
+	ChangeLog-buildd		\
 	HACKING				\
+	Makefile-buildd			\
+	NEWS-buildd			\
+	README.buildd-admin		\
+	README.chroot-building		\
 	VERSION
 
 ps:

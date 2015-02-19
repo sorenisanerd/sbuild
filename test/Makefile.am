@@ -37,6 +37,7 @@ chroot_checks = 		\
 endif
 
 EXTRA_DIST =			\
+	logging			\
 	perl-syntax.in		\
 	sbuild-update.in	\
 	sbuild-upgrade.in	\
