@@ -1,12 +1,18 @@
-sbuild (0.65.1-1) UNRELEASED; urgency=medium
+sbuild (0.65.1-1) unstable; urgency=medium
+
+  * Team upload.
 
   [ Roger Leigh ]
-  * Bump version.
   * Sbuild::Build: Build arch-all packages when other architectures
     are present in the arch list (Closes: #771235).  Thanks to
     Lennart Sorensen for this patch.
 
- -- Roger Leigh <rleigh@debian.org>  Sun, 30 Nov 2014 22:44:47 +0000
+  [ Ansgar Burchardt ]
+  * Handle :native architecture qualifier in build dependencies.
+    Thanks to Johannes Schauer for the patch. (Closes: #777204)
+  * Merge most changes from Debian's buildd-0.64 branch.
+
+ -- Ansgar Burchardt <ansgar@debian.org>  Tue, 24 Feb 2015 22:53:16 +0100
 
 sbuild (0.65.0-1) unstable; urgency=medium
 
