@@ -33,7 +33,7 @@ SQL =				\
 	language.sql		\
 	schema.sql
 
-sql_DATA =
+sql_DATA =			\
 	$(SQL)			\
 	db.sql
 
