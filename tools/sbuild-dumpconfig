@@ -40,6 +40,8 @@ my $output = $ARGV[1];
 $Sbuild::Sysconfig::paths{'SBUILD_CONF'} = '/invalid';
 $Sbuild::Sysconfig::paths{'BUILDD_CONF'} = '/invalid';
 
+$Data::Dumper::Sortkeys = 1;
+
 my $conf;
 if ($program eq "sbuild") {
     $conf = Sbuild::Conf::new(CHECK=>0);
