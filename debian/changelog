@@ -3,6 +3,8 @@ sbuild (0.65.2-1) UNRELEASED; urgency=medium
   * Sort keys in hashes dumped to sbuild.conf and sbuild.conf.man.
     Thanks to Reiner Herrmann for the patch.
     (Closes: #778482, #764504)
+  * sbuild-createchroot: set profile=sbuild also for tar-based chroots.
+    (Closes: #769289)
 
  -- Ansgar Burchardt <ansgar@debian.org>  Wed, 25 Feb 2015 20:53:55 +0100
 
