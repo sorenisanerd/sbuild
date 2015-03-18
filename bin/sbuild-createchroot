@@ -292,6 +292,7 @@ description=Debian $suite/$arch autobuilder
 file=$tarball
 groups=root,sbuild
 root-groups=root,sbuild
+profile=sbuild
 EOF
 } else {
     $config_entry = <<"EOF";
