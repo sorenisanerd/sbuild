@@ -1,10 +1,15 @@
 sbuild (0.65.2-1) UNRELEASED; urgency=medium
 
+  [ Ansgar Burchardt ]
   * Sort keys in hashes dumped to sbuild.conf and sbuild.conf.man.
     Thanks to Reiner Herrmann for the patch.
     (Closes: #778482, #764504)
   * sbuild-createchroot: set profile=sbuild also for tar-based chroots.
     (Closes: #769289)
+
+  [ Aurelien Jarno ]
+  * lib/Sbuild/Build.pm: only list content for deb/udeb files. (Closes:
+    #781075)
 
  -- Ansgar Burchardt <ansgar@debian.org>  Wed, 25 Feb 2015 20:53:55 +0100
 

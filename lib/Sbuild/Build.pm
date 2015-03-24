@@ -1767,7 +1767,7 @@ sub build {
 	my @debcfiles = @cfiles;
 	foreach (@debcfiles) {
 	    my $deb = "$build_dir/$_";
-	    next if $deb !~ /(\Q$host_arch\E|all)\.[\w\d.-]*$/;
+	    next if $deb !~ /(\Q$host_arch\E|all)\.(udeb|deb)$/;
 
 	    $self->log_subsubsection("$_");
 	    if (!open( PIPE, "dpkg --info $deb 2>&1 |" )) {
