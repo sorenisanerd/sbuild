@@ -979,33 +979,35 @@ EOF
     }
 
     # Sign the release file
-    if (!$self->generate_keys()) {
-        $self->log("Failed to generate archive keys.\n");
-        $self->cleanup_apt_archive();
-        return 0;
-    }
-    copy($self->get_conf('SBUILD_BUILD_DEPENDS_SECRET_KEY'), $dummy_archive_seckey) unless
-        (-f $dummy_archive_seckey);
-    copy($self->get_conf('SBUILD_BUILD_DEPENDS_PUBLIC_KEY'), $dummy_archive_pubkey) unless
-        (-f $dummy_archive_pubkey);
-    my @gpg_command = ('gpg', '--yes', '--no-default-keyring',
-                       '--homedir',
-                       $session->strip_chroot_path($dummy_gpghome),
-                       '--secret-keyring',
-                       $session->strip_chroot_path($dummy_archive_seckey),
-                       '--keyring',
-                       $session->strip_chroot_path($dummy_archive_pubkey),
-                       '--default-key', 'Sbuild Signer', '-abs',
-                       '-o', $session->strip_chroot_path($dummy_release_file) . '.gpg',
-                       $session->strip_chroot_path($dummy_release_file));
-    $session->run_command(
-	{ COMMAND => \@gpg_command,
-	  USER => $self->get_conf('BUILD_USER'),
-	  PRIORITY => 0});
-    if ($?) {
-	$self->log("Failed to sign dummy archive Release file.\n");
-        $self->cleanup_apt_archive();
-	return 0;
+    if (!$self->get_conf('APT_ALLOW_UNAUTHENTICATED')) {
+        if (!$self->generate_keys()) {
+            $self->log("Failed to generate archive keys.\n");
+            $self->cleanup_apt_archive();
+            return 0;
+        }
+        copy($self->get_conf('SBUILD_BUILD_DEPENDS_SECRET_KEY'), $dummy_archive_seckey) unless
+            (-f $dummy_archive_seckey);
+        copy($self->get_conf('SBUILD_BUILD_DEPENDS_PUBLIC_KEY'), $dummy_archive_pubkey) unless
+            (-f $dummy_archive_pubkey);
+        my @gpg_command = ('gpg', '--yes', '--no-default-keyring',
+                           '--homedir',
+                           $session->strip_chroot_path($dummy_gpghome),
+                           '--secret-keyring',
+                           $session->strip_chroot_path($dummy_archive_seckey),
+                           '--keyring',
+                           $session->strip_chroot_path($dummy_archive_pubkey),
+                           '--default-key', 'Sbuild Signer', '-abs',
+                           '-o', $session->strip_chroot_path($dummy_release_file) . '.gpg',
+                           $session->strip_chroot_path($dummy_release_file));
+        $session->run_command(
+            { COMMAND => \@gpg_command,
+              USER => $self->get_conf('BUILD_USER'),
+              PRIORITY => 0});
+        if ($?) {
+            $self->log("Failed to sign dummy archive Release file.\n");
+            $self->cleanup_apt_archive();
+            return 0;
+        }
     }
 
     # Write a list file for the dummy archive if one not create yet.
@@ -1041,15 +1043,17 @@ EOF
         }
     }
 
-    # Add the generated key
-    $session->run_command(
-        { COMMAND => ['apt-key', 'add', $session->strip_chroot_path($dummy_archive_pubkey)],
-          USER => 'root',
-          PRIORITY => 0});
-    if ($?) {
-        $self->log("Failed to add dummy archive key.\n");
-        $self->cleanup_apt_archive();
-        return 0;
+    if (!$self->get_conf('APT_ALLOW_UNAUTHENTICATED')) {
+        # Add the generated key
+        $session->run_command(
+            { COMMAND => ['apt-key', 'add', $session->strip_chroot_path($dummy_archive_pubkey)],
+              USER => 'root',
+              PRIORITY => 0});
+        if ($?) {
+            $self->log("Failed to add dummy archive key.\n");
+            $self->cleanup_apt_archive();
+            return 0;
+        }
     }
 
     return 1;
