@@ -1998,8 +1998,11 @@ sub generate_stats {
     $self->add_stat('Build Architecture', $self->get('Build Arch'));
     $self->add_stat('Build Profiles', $self->get('Build Profiles'))
         if $self->get('Build Profiles');
-    my @keylist=keys %{$resolver->get('Initial Foreign Arches')};
-    push @keylist, keys %{$resolver->get('Added Foreign Arches')};
+    my @keylist;
+    if (defined $resolver) {
+	@keylist=keys %{$resolver->get('Initial Foreign Arches')};
+	push @keylist, keys %{$resolver->get('Added Foreign Arches')};
+    }
     my $foreign_arches = join ' ', @keylist;
     $self->add_stat('Foreign Architectures', $foreign_arches )
         if $foreign_arches;
