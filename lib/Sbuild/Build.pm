@@ -2156,6 +2156,7 @@ sub open_build_log {
 
 	$PROGRAM_NAME = 'package log for ' . $self->get('Package_SVersion') . '_' . $self->get('Host Arch');
 
+	$saved_stdout->autoflush(1);
 	if (!$self->get_conf('NOLOG') &&
 	    $self->get_conf('LOG_DIR_AVAILABLE')) {
 	    unlink $filename; # To prevent opening symlink to elsewhere
@@ -2163,7 +2164,6 @@ sub open_build_log {
 		Sbuild::Exception::Build->throw(error => "Failed to open build log $filename: $!",
 						failstage => "init");
 	    CPLOG->autoflush(1);
-	    $saved_stdout->autoflush(1);
 
 	    # Create 'current' symlinks
 	    if ($self->get_conf('SBUILD_MODE') eq 'buildd') {
