@@ -43,6 +43,16 @@ shopt -s extglob
 if ! echo "$CHROOT_DESCRIPTION" | grep -q '(source chroot)' ; then
     CHROOT_ALIAS="${CHROOT_ALIAS/#experimental-/sid-experimental-}"
     case $CHROOT_ALIAS in
+        +([^-])-kfreebsd-+([^-])-kfreebsd-*-sbuild*)
+        SUITE_BASE=$(echo $CHROOT_ALIAS | cut -f1-2 -d-)
+        SUITE_VARIANT=$(echo $CHROOT_ALIAS | cut -f3 -d-)
+        ;;
+        +([^-])-kfreebsd-kfreebsd-*-sbuild*)
+        SUITE_BASE=$(echo $CHROOT_ALIAS | cut -f1-2 -d-)
+        if [ ${SUITE_BASE} != "sid" ]; then
+            SUITE_VARIANT="proposed-updates"
+        fi
+        ;;
         +([^-])-+([^-])-@(kfreebsd|hurd)-*-sbuild*)
         SUITE_BASE=$(echo $CHROOT_ALIAS | cut -f1 -d-)
         SUITE_VARIANT=$(echo $CHROOT_ALIAS | cut -f2 -d-)
