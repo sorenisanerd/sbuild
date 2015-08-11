@@ -148,7 +148,6 @@ sub get_next_WANNABUILD {
 	    my $pipe = $db->pipe_query(
                 ($dist_config->get('WANNA_BUILD_API') ? '--api '.$dist_config->get('WANNA_BUILD_API') : ''),
 		'--list=needs-build',
-		'--dist=' . $dist_name,
                 ($dist_config->get('WANNA_BUILD_MIN_AGE') ? '--min-age '.$dist_config->get('WANNA_BUILD_MIN_AGE') : ''),
                 );
 	    if (!$pipe) {
@@ -340,7 +339,6 @@ sub do_wanna_build {
         use YAML::Tiny;
         my $pipe = $db->pipe_query(
 	'--api '.$dist_config->get('WANNA_BUILD_API'),
-	'--dist=' . $dist_config->get('DIST_NAME'),
        	$pkgver);
         unless ($pipe) {
             $self->unblock_signals();
@@ -391,7 +389,6 @@ sub do_wanna_build {
     }
     my $pipe = $db->pipe_query(
 	'-v',
-	'--dist=' . $dist_config->get('DIST_NAME'),
        	$pkgver);
     if ($pipe) {
 	while( <$pipe> ) {
@@ -716,7 +713,6 @@ sub handle_prevfailed {
     my $db = $self->get_db_handle($dist_config);
     my $pipe = $db->pipe_query(
 	'--info',
-       	'--dist=' . $dist_name,
        	$pkg);
     if (!$pipe) {
 	$self->log("Can't run wanna-build: $!\n");

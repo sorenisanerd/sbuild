@@ -627,12 +627,11 @@ sub redo_new_version ($$$) {
     my $dist_config = shift;
     my $oldv = shift;
     my $newv = shift;
-    my $dist_name = $dist_config->get('DIST_NAME');
 
     my $err = 0;
 
 	my $db = $self->get_db_handle($dist_config);
-    my $pipe = $db->pipe_query('-v', '--dist=' . $dist_name, $newv);
+    my $pipe = $db->pipe_query('-v', $newv);
     if ($pipe) {
 	while(<$pipe>) {
 	    next if /^wanna-build Revision/ ||
@@ -972,7 +971,7 @@ sub set_to_failed ($$$) {
     return if !$self->check_state( $pkg, $dist_config, $is_bugno ? "Failed" : qw(Built Building Build-Attempted BD-Uninstallable) );
 
     my $db = $self->get_db_handle($dist_config);
-    my $pipe = $db->pipe_query_out('--failed', "--dist=$dist_name", $pkg);
+    my $pipe = $db->pipe_query_out('--failed', $pkg);
     if ($pipe) {
 	print $pipe "${text}.\n";
 	close($pipe);
@@ -999,7 +998,7 @@ sub set_to_depwait ($$$) {
     my $dist_name = $dist_config->get('DIST_NAME');
 
 	my $db = $self->get_db_handle($dist_config);
-    my $pipe = $db->pipe_query_out('--dep-wait', "--dist=$dist_name", $pkg);
+    my $pipe = $db->pipe_query_out('--dep-wait', $pkg);
     if ($pipe) {
 	print $pipe "$deps\n";
 	close($pipe);
@@ -1025,7 +1024,7 @@ sub give_back ($$) {
     my $answer;
 
 	my $db = $self->get_db_handle($dist_config);
-    my $pipe = $db->pipe_query('--give-back', '--dist=' . $dist_name, $pkg);
+    my $pipe = $db->pipe_query('--give-back', $pkg);
     if ($pipe) {
 	$answer = <$pipe>;
 	close($pipe);
@@ -1050,7 +1049,7 @@ sub no_build ($$) {
     my $answer;
 
     my $db = $self->get_db_handle($dist_config);
-    my $pipe = $db->pipe_query('--no-build', '--dist=' . $dist_name, $pkg);
+    my $pipe = $db->pipe_query('--no-build', $pkg);
     if ($pipe) {
 	$answer = <$pipe>;
 	close($pipe);
@@ -1075,7 +1074,7 @@ sub get_fail_msg ($$) {
     $pkg =~ s/_.*//;
 
     my $db = $self->get_db_handle($dist_config);
-    my $pipe = $db->pipe_query('--info', '--dist=' . $dist_name, $pkg);
+    my $pipe = $db->pipe_query('--info', $pkg);
     if ($pipe) {
 	my $msg = "";
 	while(<$pipe>) {
@@ -1143,7 +1142,7 @@ sub check_state_internal ($$@) {
     my ($pkg, $vers) = ($1, $2);
 
     my $db = $self->get_db_handle($dist_config);
-    my $pipe = $db->pipe_query('--info', "--dist=$dist_name", $pkg);
+    my $pipe = $db->pipe_query('--info', $pkg);
     if (!$pipe) {
 	$self->set('Mail Error',
 		   $self->get('Mail Error') .
@@ -1206,7 +1205,7 @@ sub check_building_any_dist ($) {
 	my $dist_name = $dist_config->get('DIST_NAME');
 
 	my $db = $self->get_db_handle($dist_config);
-	my $pipe = $db->pipe_query('--info', "--dist=$dist_name", $pkg);
+	my $pipe = $db->pipe_query('--info', $pkg);
     if (!$pipe) {
 	$self->set('Mail Error',
 		   $self->get('Mail Error') .

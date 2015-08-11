@@ -86,13 +86,13 @@ sub uploaded ($@) {
 
     my @propagated_pkgs = ();
 
-    foreach my $dist_name (@_) {
+    foreach my $archdist_name (@_) {
 	my $msgs = "";
 
-	my $dist_config = $self->get_dist_config_by_name($dist_name);
+	my $dist_config = $self->get_archdist_config_by_name($archdist_name);
 	my $db = $self->get_db_handle($dist_config);
 
-	my $pipe = $db->pipe_query('--uploaded', '--dist=' . $dist_name, $pkg);
+	my $pipe = $db->pipe_query('--uploaded', $pkg);
 
 	if ($pipe) {
 	    while(<$pipe>) {
@@ -114,7 +114,7 @@ sub uploaded ($@) {
 			   exitstatus($?), "\n" )
 		    if $?;
 	    } else {
-		$self->get('Uploaded Pkgs')->{$dist_name} .= " $pkg";
+		$self->get('Uploaded Pkgs')->{$archdist_name} .= " $pkg";
 	    }
 	}
 	else {
@@ -167,6 +167,11 @@ sub upload ($$) {
 	    my $text;
 	    { local($/); undef $/; $text = <F>; }
 	    close( F );
+	    if ($text !~ /^Architecture:\s*(.*)\s*$/m) {
+		$self->log("$f doesn't have a Architecture: field\n");
+		next;
+	    }
+	    my @archs = split( /\s+/, $1 );
 	    if ($text !~ /^Distribution:\s*(.*)\s*$/m) {
 		$self->log("$f doesn't have a Distribution: field\n");
 		next;
@@ -184,7 +189,8 @@ sub upload ($$) {
 	    } else {
 		($pkg = $f) =~ s/_\S+\.changes$//;
 	    }
-	    $self->uploaded($pkg,@dists);
+	    my $archdist="@archs/@dists";
+	    $self->uploaded($pkg,$archdist);
 	} else {
 	    push (@after, $f);
 	}

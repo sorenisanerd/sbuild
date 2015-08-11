@@ -147,6 +147,32 @@ sub get_dist_config_by_name ($$) {
     return $dist_config;
 }
 
+sub get_archdist_config_by_name ($$) {
+    my $self = shift;
+    my $archdist_name = shift;
+    my ($arch_name, $dist_name) = split( /\//, $archdist_name);
+
+    my $arch_config, my $dist_config;
+    for my $dist_config_entry (@{$self->get_conf('DISTRIBUTIONS')}) {
+        if ($dist_config_entry->get('BUILT_ARCHITECTURE') eq $arch_name &&
+            $dist_config_entry->get('DIST_NAME') eq $dist_name) {
+            $dist_config = $dist_config_entry;
+        }
+    }
+
+    if (!$dist_config) {
+        $self->set('Mail Short Error',
+                $self->get('Mail Short Error') .
+                "No configuration found for arch=$arch_name, dist=$dist_name\n");
+        $self->set('Mail Error',
+                $self->get('Mail Error') .
+                "Answer could not be processed, as arch=$arch_name, dist=$dist_name".
+                "does not match any of the entries in the buildd configuration.\n");
+    }
+
+    return $dist_config;
+}
+
 sub log {
 	my $self = shift;
 
