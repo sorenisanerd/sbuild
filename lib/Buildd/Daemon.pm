@@ -541,8 +541,13 @@ sub do_build {
     if (defined($todo->{'arch_all'}) && $todo->{'arch_all'}) {
 	push @sbuild_args, '--arch-all';
     }
-    push ( @sbuild_args, "--arch=" . $dist_config->get('BUILT_ARCHITECTURE') )
-	if $dist_config->get('BUILT_ARCHITECTURE');
+    if ($dist_config->get('BUILT_ARCHITECTURE')) {
+        if ($dist_config->get('BUILT_ARCHITECTURE') eq 'all') {
+	    push ( @sbuild_args, "--arch-all-only" );
+        } else {
+            push ( @sbuild_args, "--arch=" . $dist_config->get('BUILT_ARCHITECTURE') );
+	}
+    }
     push ( @sbuild_args, "--chroot=" . $dist_config->get('SBUILD_CHROOT') )
 	if $dist_config->get('SBUILD_CHROOT');
 
