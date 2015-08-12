@@ -1480,10 +1480,6 @@ sub build {
     $self->set('Build Start Time', time);
     $self->set('Build End Time', $self->get('Build Start Time'));
 
-    my $binopt = $self->get_conf('BUILD_SOURCE') ?
-	$self->get_conf('FORCE_ORIG_SOURCE') ? "-sa" : "" :
-	$self->get_conf('BUILD_ARCH_ALL') ?	"-b" : "-B";
-
     my $bdir = $self->get('Session')->strip_chroot_path($dscdir);
     if (-f "$self->{'Chroot Dir'}/etc/ld.so.conf" &&
 	! -r "$self->{'Chroot Dir'}/etc/ld.so.conf") {
@@ -1532,7 +1528,12 @@ sub build {
 	}
     }
 
+    use constant dpkgopt => [[["", "-B"], ["-A", "-b" ]], [["-S", "-G"], ["-g", ""]]];
+    my $binopt = dpkgopt->[$self->get_conf('BUILD_SOURCE')]
+			  [$self->get_conf('BUILD_ARCH_ALL')]
+			  [$self->get_conf('BUILD_ARCH_ANY')];
     push (@{$buildcmd}, $binopt) if $binopt;
+    push (@{$buildcmd}, "-sa") if ($self->get_conf('BUILD_SOURCE') && $self->get_conf('FORCE_ORIG_SOURCE'));
     push (@{$buildcmd}, "-r" . $self->get_conf('FAKEROOT'));
 
     if (defined($self->get_conf('DPKG_BUILDPACKAGE_USER_OPTIONS')) &&
@@ -1829,8 +1830,7 @@ sub get_changes {
     my $path=shift;
     my $changes;
 
-    if ( (grep {$_ eq "-A"} @{$self->get_conf('DPKG_BUILDPACKAGE_USER_OPTIONS')})
-	 && -r $path . '/' . $self->get('Package_SVersion') . "_all.changes") {
+    if ( -r $path . '/' . $self->get('Package_SVersion') . "_all.changes") {
 	$changes = $self->get('Package_SVersion') . "_all.changes";
     }
     else {
@@ -2320,7 +2320,10 @@ sub close_build_log {
 
     my $subject = "Log for " . $self->get_status() .
 	" build of " . $self->get('Package_Version');
-    if ($self->get('Host Arch')) {
+
+    if ($self->get_conf('BUILD_ARCH_ALL') && !$self->get_conf('BUILD_ARCH_ANY')) {
+	$subject .= " on all";
+    } elsif ($self->get('Host Arch')) {
 	$subject .= " on " . $self->get('Host Arch');
     }
     if ($self->get_conf('ARCHIVE')) {

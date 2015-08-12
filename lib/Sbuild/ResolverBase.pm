@@ -806,7 +806,7 @@ EOF
 	push(@negative, $deps->{'Build Conflicts'})
 	    if (defined($deps->{'Build Conflicts'}) &&
 		$deps->{'Build Conflicts'} ne "");
-	if ($self->get_conf('BUILD_ARCH_ALL')) {
+	if ($self->get_conf('BUILD_ARCH_ANY')) {
 	    push(@positive_arch, $deps->{'Build Depends Arch'})
 		if (defined($deps->{'Build Depends Arch'}) &&
 		    $deps->{'Build Depends Arch'} ne "");
