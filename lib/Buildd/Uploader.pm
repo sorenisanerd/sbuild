@@ -73,8 +73,8 @@ sub run {
 
     my $uploaded_pkgs = $self->get('Uploaded Pkgs');
 
-    foreach my $dist (keys %{$uploaded_pkgs}) {
-	$self->log("Set to Uploaded($dist):$uploaded_pkgs->{$dist}");
+    foreach my $archdist (keys %{$uploaded_pkgs}) {
+	$self->log("Set to Uploaded($archdist):$uploaded_pkgs->{$archdist}");
     }
 
     return 0;
@@ -83,43 +83,34 @@ sub run {
 sub uploaded ($@) {
     my $self = shift;
     my $pkg = shift;
+    my $arch_name = shift;
+    my $dist_name = shift;
 
-    my @propagated_pkgs = ();
+    my $msgs = "";
 
-    foreach my $archdist_name (@_) {
-	my $msgs = "";
+    my $dist_config = $self->get_arch_dist_config_by_name($arch_name, $dist_name);
+    my $db = $self->get_db_handle($dist_config);
 
-	my $dist_config = $self->get_archdist_config_by_name($archdist_name);
-	my $db = $self->get_db_handle($dist_config);
+    my $pipe = $db->pipe_query('--uploaded', $pkg);
 
-	my $pipe = $db->pipe_query('--uploaded', $pkg);
-
-	if ($pipe) {
-	    while(<$pipe>) {
-		if (/^(\S+): Propagating new state /) {
-		    push( @propagated_pkgs, $1 );
-		}
-		elsif (/^(\S+): already uploaded/ &&
-		       Buildd::isin( $1, @propagated_pkgs )) {
-		    # be quiet on this
-		}
-		else {
-		    $msgs .= $_;
-		}
-	    }
-	    close($pipe);
-	    if ($msgs or $?) {
-		$self->log($msgs) if $msgs;
-		$self->log("wanna-build --uploaded failed with status ",
-			   exitstatus($?), "\n" )
-		    if $?;
-	    } else {
-		$self->get('Uploaded Pkgs')->{$archdist_name} .= " $pkg";
+    if ($pipe) {
+        while(<$pipe>) {
+	    if (!/^(\S+): Propagating new state /) {
+		$msgs .= $_;
 	    }
 	}
-	else {
-	    $self->log("Can't spawn wanna-build --uploaded: $!\n");
+	close($pipe);
+	if ($msgs or $?) {
+	    $self->log($msgs) if $msgs;
+	    $self->log("wanna-build --uploaded failed with status ",
+			exitstatus($?), "\n" )
+		if $?;
+	} else {
+	    my $archdist_name = "$arch_name/$dist_name";
+	    $self->get('Uploaded Pkgs')->{$archdist_name} .= " $pkg";
 	}
+    } else {
+	$self->log("Can't spawn wanna-build --uploaded: $!\n");
     }
 }
 
@@ -189,8 +180,7 @@ sub upload ($$) {
 	    } else {
 		($pkg = $f) =~ s/_\S+\.changes$//;
 	    }
-	    my $archdist="@archs/@dists";
-	    $self->uploaded($pkg,$archdist);
+	    $self->uploaded($pkg, @archs, @dists);
 	} else {
 	    push (@after, $f);
 	}

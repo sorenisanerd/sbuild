@@ -147,10 +147,10 @@ sub get_dist_config_by_name ($$) {
     return $dist_config;
 }
 
-sub get_archdist_config_by_name ($$) {
+sub get_arch_dist_config_by_name ($$) {
     my $self = shift;
-    my $archdist_name = shift;
-    my ($arch_name, $dist_name) = split( /\//, $archdist_name);
+    my $arch_name = shift;
+    my $dist_name = shift;
 
     my $arch_config, my $dist_config;
     for my $dist_config_entry (@{$self->get_conf('DISTRIBUTIONS')}) {
