@@ -9,7 +9,8 @@ BUILDD_BUILD=$(shell echo ${VERSION} | grep -q 'buildd' && echo yes || echo no)
 configure:
 	./bootstrap
 
-debian/build/config.status: configure
+#debian/build/config.status: configure
+debian/build/config.status:
 	dh_testdir
 
 	[ -d debian/build ] || mkdir debian/build

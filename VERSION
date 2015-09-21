@@ -1,0 +1,5 @@
+Package: sbuild
+Version: 0.65.2
+Release-Date: 24 Mar 2015
+Released-By: Aurelien Jarno <aurelien@aurel32.net>
+Git-Tag: release/sbuild-0.65.2
